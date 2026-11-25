@@ -9,7 +9,13 @@ LABEL="${GOLDEN_LABEL:-baseline}"
 MANIFEST="${GOLDEN_MANIFEST:-$REPO/tools/golden/manifests/$LABEL.tsv}"
 
 # 1. The baseline must be the untouched engine.
-git rev-parse -q --verify refs/tags/baseline-engine >/dev/null || git fetch -q origin tag baseline-engine
+# The tag may not exist on GitHub (cloud sessions cannot push tags), so fall back to the pinned commit.
+if ! git rev-parse -q --verify refs/tags/baseline-engine >/dev/null; then
+  git fetch -q origin tag baseline-engine 2>/dev/null || git tag baseline-engine "$(cat tools/golden/BASELINE_COMMIT)"
+fi
+if [ "$(git rev-parse baseline-engine^{commit})" != "$(cat tools/golden/BASELINE_COMMIT)" ]; then
+  echo "ERROR: tag baseline-engine does not point at tools/golden/BASELINE_COMMIT" >&2; exit 1
+fi
 if ! git diff --quiet baseline-engine -- src || [ -n "$(git status --porcelain -- src)" ]; then
   echo "ERROR: src/ differs from tag baseline-engine. The baseline must run on the untouched engine." >&2
   exit 1
