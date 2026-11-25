@@ -25,12 +25,25 @@ Wrong or incomplete in the spec (now corrected there):
 8. Tooling: AGP 9.5.x / Gradle 9.6.0 / JDK 17 / API 37 confirmed; Android 17 RAM-based memory limits confirmed (logged only for targetSdk ≤ 36). Foreground service type still to choose in Phase 4 (`dataSync` describes "local file processing").
 9. Per-phase branches conflict with the cloud session's single allowed branch.
 
+## Joshua's answers (2026-11-25)
+1. App name **"UPR ZX for Android (unofficial)"**, application ID **`com.joshuamootoo.uprzx`**.
+2. Wants every supported generation eventually; **start with NDS** (Gen 4 and 5). Exact ROM list still to come.
+3. Phone: Samsung Galaxy Z Fold8 Ultra. RAM and Android version still to come.
+4. PC: Windows 11, Android Studio already installed.
+5. ROMs are on his PC (`E:\Local\Documents\Roms`), not in the cloud.
+6. Claude may accept the Android SDK licence for him. Done: the cloud session has cmdline-tools, `platform-tools`, `platforms;android-37.0` and `build-tools;37.0.0` in `~/android-sdk`. The container is temporary, so later sessions reinstall it.
+7. `BLZCoder` `System.exit` fix: approved ("fix it if it would cause problems"). Scheduled for Phase 2, because Phase 1 must run on untouched source.
+8. One session branch for all phases is fine; may push the `baseline-engine` tag; may commit.
+
+## Proposed phase reorder (Joshua asked to start with NDS)
+Phase 1 records NDS manifests first. Phase 4 (first usable app) targets **Gen 4 and 5** instead of Gen 1 to 3, and Phase 6 covers Gen 1 to 3. The flow is the same; NDS adds disk extraction and memory risk earlier, which Phase 3 measures anyway.
+
 ## NOT VERIFIED
-- Android SDK install in the cloud session: not done, because installing requires accepting Google's SDK licence, which is Joshua's decision.
+- Joshua's Android Studio SDK versions and `adb` on PATH.
 - Anything involving ROMs, a phone or an emulator.
 
 ## Known issues
 - None in new code (there is none yet).
 
 ## Next step
-Joshua answers the Phase 0 questions (app name and ID, ROMs, phone, OS, branch policy, licence acceptance, BLZ change). Then Phase 0 exit → Phase 1 (baseline harness).
+Joshua: clone the repo locally, copy the NDS ROMs into `testroms/nds/`, send the ROM file list and phone RAM / Android version, and share the clone with this session through Remote Control (steps in `docs/SETUP.md`). Then Phase 0 exit → Phase 1 (baseline harness).

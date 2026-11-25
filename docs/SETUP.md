@@ -1,37 +1,59 @@
-# Setup for Joshua
+# Setup for Joshua (Windows 11)
 
 Two places do work on this project:
 
-1. **The cloud session** (where Claude runs). It has JDK 21 and can download the Android SDK, so it can build the engine, run JVM tests and (from Phase 3) build debug APKs. It has **no emulator** (no hardware virtualisation) and **no access to your phone or your ROMs** unless you upload them to a session.
-2. **Your computer and phone.** Needed for: running the golden tests on your ROMs (or uploading ROMs to a cloud session), installing APKs on your phone, measuring memory, and booting outputs in an emulator.
+1. **The cloud session** (where Claude runs). It has JDK 21 and the Android SDK, so it can build the engine, run tests that need no ROM, and build debug APKs. It has **no emulator** and **cannot see your PC or phone** on its own.
+2. **Your PC and phone.** The ROMs stay on your PC. Golden tests on real ROMs, installing on the phone, memory measurements and boot tests all happen there. Claude can run commands on your PC only if you share a folder with the session through Remote Control (step 4).
 
-## On your computer
+All commands below are for **PowerShell** (Start menu, type "PowerShell").
 
-### 1. Android Studio (includes a JDK and the SDK)
-Think of it as Visual Studio for Android: an IDE plus the SDK manager, emulator and `adb`.
-
-1. Download the current stable Android Studio from <https://developer.android.com/studio> and install it with default options.
-2. On first launch choose **Standard** setup. Accept the SDK licences when asked — that is your decision to make, so Claude has not done it for you.
-3. **Tools > SDK Manager > SDK Platforms**: tick **Android 17 (API 37)**. **SDK Tools**: make sure **Android SDK Build-Tools**, **Android SDK Platform-Tools** and **Android Emulator** are ticked. Apply.
-4. Check it worked — open a terminal (PowerShell on Windows) and run:
-   ```bash
-   adb version
-   ```
-   If "not recognised", add the SDK's `platform-tools` folder to PATH (Windows default: `%LOCALAPPDATA%\Android\Sdk\platform-tools`).
-
-### 2. Git
-You already have the repo on GitHub. To get your phone and ROMs involved you will want a local clone:
+## 1. Check the tools you have
 ```bash
-git clone https://github.com/JoshuaMootoo/universal-pokemon-randomizer-zx-APK.git
+git --version
+```
+If that says "not recognised", install Git for Windows from <https://git-scm.com/download/win> (default options), then open a new PowerShell window.
+
+```bash
+adb version
+```
+If that says "not recognised", Android Studio's `platform-tools` folder is not on PATH. Run this once, then open a new PowerShell window:
+```bash
+[Environment]::SetEnvironmentVariable("Path", $env:Path + ";$env:LOCALAPPDATA\Android\Sdk\platform-tools", "User")
 ```
 
-### 3. ROM folder
-Create `testroms/` in the clone root and put your own decrypted ROM files in it. It is gitignored. Before every commit, `git status` must not show any ROM.
+In Android Studio, open **Tools > SDK Manager**. Under **SDK Platforms**, tick **Android 17 (API 37)**, then click **Apply**.
 
-## On your phone
-1. **Settings > About phone**, tap **Build number** seven times to enable Developer options.
-2. **Settings > System > Developer options**: turn on **USB debugging**.
-3. Plug into the computer, accept the "Allow USB debugging" prompt, then run `adb devices` — your phone should be listed as `device`.
-4. Sideloading the APK later also needs "Install unknown apps" allowed for whichever app you open the APK with (Files, browser).
+## 2. Clone the repository
+Use a normal local folder, not OneDrive (it can lock files during builds):
+```bash
+cd E:\Local\Documents
+```
+```bash
+git clone -b claude/wizardly-wozniak-5zrlnc https://github.com/JoshuaMootoo/universal-pokemon-randomizer-zx-APK.git
+```
 
-Nothing here is needed until Phase 1 (ROMs) and Phase 3 (phone).
+## 3. Copy the ROMs in (copy, never move)
+```bash
+New-Item -ItemType Directory -Force E:\Local\Documents\universal-pokemon-randomizer-zx-APK\testroms\nds
+```
+In File Explorer, **copy** your `.nds` files from `E:\Local\Documents\Roms` into that `testroms\nds` folder. Your originals stay where they are. `testroms/` is gitignored, so these files can't be committed. Check:
+```bash
+cd E:\Local\Documents\universal-pokemon-randomizer-zx-APK
+```
+```bash
+git status
+```
+`git status` must not list any ROM.
+
+## 4. Share the clone with the Claude session (Remote Control)
+1. Open the **Claude desktop app** on your PC.
+2. Go to **Settings > Claude Code > Remote Control** and add the folder `E:\Local\Documents\universal-pokemon-randomizer-zx-APK`. That page may change between app versions; if the option isn't there, tell Claude.
+3. Keep the app running while Claude works. Claude will then ask to connect, and you approve it in the app.
+
+Not every app version can share a Windows folder with a cloud session. If it doesn't work, start a Claude Code session on your PC in that folder instead, and it can pick up from `docs/PROGRESS.md`.
+
+## 5. Phone (needed from Phase 3)
+1. **Settings > About phone > Software information**, tap **Build number** seven times to unlock Developer options.
+2. **Settings > Developer options**: turn on **USB debugging**.
+3. Plug the phone into the PC, accept the "Allow USB debugging?" prompt, then run `adb devices`. Your phone should be listed as `device`.
+4. To sideload the APK later, allow "Install unknown apps" for the app you open it with (for example My Files).

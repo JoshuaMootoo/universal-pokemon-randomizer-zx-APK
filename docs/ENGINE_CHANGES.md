@@ -8,7 +8,7 @@ Changes allowed by BUILD_SPEC section 4: 4.1 remove GUI dependency, 4.2 configur
 |---|---|---|---|---|---|
 | — | *(none yet)* | | | | |
 
-## Proposed, awaiting approval
+## Approved, not yet made (Joshua approved 2026-11-25; to be made in Phase 2, after `baseline-engine`)
 
 | File | Proposal | Why |
 |---|---|---|

@@ -67,7 +67,7 @@ docs/
 - `:core` points its Java source set at `../src`, excluding `com/dabomstew/pkrandom/newgui/**/*.java` and `launcher/**`. Its resources also come from `../src`, excluding `**/*.java`, `**/*.form` and `launcher/**`. Confirm the built JAR contains `config/`, `patches/` and `newgui/Bundle.properties` at their original package paths. Leaving the source in place makes upstream diffs easy.
 - `:core` targets Java 17 bytecode and holds a small Kotlin or Java facade, the only API `:app` should call: `inspect`, `load`, `applyGameUpdate`, `validateSettings`, `randomize(settings, seed, output, progress)`, `close`.
 - `:app` uses MVVM: Compose screens, ViewModels, `StateFlow`, coroutines. Add dependencies only when needed.
-- Suggested application ID: `com.joshuamootoo.uprzx`. Confirm with Joshua in Phase 0, along with the app name. Name it so it is clearly an unofficial Android port.
+- Application ID: `com.joshuamootoo.uprzx`. App name: "UPR ZX for Android (unofficial)". *(Confirmed by Joshua 2026-11-25.)*
 - Suggested `minSdk 26`. Use the latest stable `compileSdk` and `targetSdk` that the chosen Android Gradle plugin supports. In late 2026, AGP 9.5 supports up to API 37 and needs Gradle 9.6.0 or later and JDK 17 or later. Re-check this.
   - *(Checked 2026-11-25 against developer.android.com.)* AGP 9.5.x (9.5.1 listed) — Gradle 9.6.0 minimum, JDK 17, SDK Build Tools 36.0.0 minimum, max API 37. The SDK repository has `platforms;android-37.0` stable and `build-tools;37.0.0`. Android's own example still applies `org.jetbrains.kotlin.android` (Kotlin 2.4.10); confirm the Kotlin plugin setup in Phase 2. `minSdk 26` matters for the engine: it uses `java.nio.file.Paths`/`Files` (API 26) and streams (API 24). Phase 2 runs Android Lint's API check over `:core` to find anything else.
   - Android 17 memory limits are based on device RAM and apply to all apps; for apps targeting API 36 or lower a violation is only logged. `adb shell am memory-limiter status` reports them. Phase 3 measures against them.
@@ -89,7 +89,7 @@ This is critical. If the fallback `./` is not writable, `NDSRom` and `NCCH` set 
 
 *(Added 2026-11-25, Phase 0.)* Also: `NDSRom` uses `mkdir()` (not `mkdirs()`), so `ROOT_PATH` must already exist and end with a separator. The temp folder is `ROOT_PATH + "tmp_" + <filename without extension, non-`[A-Za-z0-9_]` removed>`, so different ROM names can map to the same folder (for example `Pokémon B.nds` and `Pokmon B.nds`), and a name with no `.` throws. `ROOT_PATH/customnames.rncn`, if present, overrides the bundled custom names **and its checksum is written into the settings string**, so the host controls which custom names file is in `ROOT_PATH`.
 
-### 4.2a Stop `System.exit` in the BLZ decoder *(added 2026-11-25, Phase 0; needs Joshua's approval)*
+### 4.2a Stop `System.exit` in the BLZ decoder *(added 2026-11-25, Phase 0; approved by Joshua 2026-11-25)*
 `cuecompressors/BLZCoder.BLZ_Decode` calls `EXIT()`, which calls `System.exit(0)`, on a bad header or length. It is reached from `NDSRom` (ARM9) and `NDSY9Entry` (overlays) with ROM data, so a malformed or modified DS ROM would silently kill the Android app. Proposed minimal change: make `EXIT` throw an unchecked exception instead. Desktop behaviour for valid ROMs is unchanged; golden tests must still pass.
 
 ### 4.3 Replace `java.awt`
