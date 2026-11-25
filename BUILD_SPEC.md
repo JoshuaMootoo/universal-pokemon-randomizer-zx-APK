@@ -65,6 +65,7 @@ docs/
 ```
 
 - `:core` points its Java source set at `../src`, excluding `com/dabomstew/pkrandom/newgui/**/*.java` and `launcher/**`. Its resources also come from `../src`, excluding `**/*.java`, `**/*.form` and `launcher/**`. Confirm the built JAR contains `config/`, `patches/` and `newgui/Bundle.properties` at their original package paths. Leaving the source in place makes upstream diffs easy.
+- *(Added 2026-11-25, Phase 1.)* **Compile with UTF-8 source encoding.** Several engine files contain non-ASCII string literals that are written into ROM text (for example `Pokémon` and `you’re` in `Gen3RomHandler`/`Gen4RomHandler`, `’` and `…` in `RomFunctions`). Any other encoding changes the output ROM.
 - `:core` targets Java 17 bytecode and holds a small Kotlin or Java facade, the only API `:app` should call: `inspect`, `load`, `applyGameUpdate`, `validateSettings`, `randomize(settings, seed, output, progress)`, `close`.
 - `:app` uses MVVM: Compose screens, ViewModels, `StateFlow`, coroutines. Add dependencies only when needed.
 - Application ID: `com.joshuamootoo.uprzx`. App name: "UPR ZX for Android (unofficial)". *(Confirmed by Joshua 2026-11-25.)*
@@ -199,6 +200,7 @@ Create a desktop JVM harness **before changing any engine code**, built against 
 - The GUI calls `RandomSource.seed(seed)` before building settings, and `randomize` reseeds with the same value.
 - The GUI builds `Settings` from its controls (`restoreStateFromSettings` then `createSettingsFromState`), not straight from the file. The harness uses `Settings.read` + `tweakForRom` and records the resulting settings string; Phase 5 checks that the Android option model produces the same string.
 - Log lines use `line.separator` (`\r\n` on Windows, `\n` on Android), which the log normalisation already ignores.
+- *(Added 2026-11-25, Phase 1.)* `new Settings()` is incomplete: `toString()` throws unless `romName` and `selectedEXPCurve` are set. The GUI always sets `romName` to the loaded ROM's name (so the settings string contains it) and the EXP curve from its combo box (default Medium Fast). The Android option model must do the same.
 
 For each case record: input SHA-256, settings string, seed, custom names SHA-256, output SHA-256 (per file for LayeredFS), check value and normalised log (ignore elapsed time and line ending differences; justify any other exclusion).
 

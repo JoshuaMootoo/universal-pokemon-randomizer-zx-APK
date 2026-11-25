@@ -30,4 +30,12 @@ find src -name '*.java' -not -path 'src/com/dabomstew/pkrandom/newgui/*' -not -p
 ```
 (Expected at baseline: exactly 2 errors, both in `Utils.java`, from the `NewRandomizerGUI` import.)
 
+Golden master (needs ROMs in `testroms/`; see `tools/golden/README.md`):
+```bash
+tools/golden/run-baseline.sh --only none,typical      # Linux/macOS smoke test
+tools/golden/run-baseline.sh                          # full baseline
+```
+Windows: `powershell -ExecutionPolicy Bypass -File tools\golden\run-baseline.ps1 [same options]`.
+Exit 0 = pass, 1 = mismatch, 2 = nothing verified (no ROMs). Compile the engine with `-encoding UTF-8` always.
+
 Build and test commands will be added here as each phase creates them.

@@ -1,8 +1,22 @@
 # Progress
 
-**Current phase:** 0 — Setup (in progress, waiting for Joshua's answers)
+**Current phase:** 1 — Baseline harness (harness built; waiting for Joshua to run it on his PC)
 **Last updated:** 2026-11-25
 **Branch:** `claude/wizardly-wozniak-5zrlnc` (cloud session branch)
+
+## Phase 1 — status (2026-11-25)
+Joshua approved starting Phase 1 (phone details can follow before Phase 3). ROM upload to the cloud session was too big, so the harness runs on his PC (manual route): Claude builds and pushes, Joshua runs one command and sends back the manifest.
+
+Done:
+- Tag `baseline-engine` = `7f00eb8` (upstream v4.6.1; `src/` identical to HEAD at tagging).
+- Harness in `tools/golden/` (see its README): shim outside `src/`, UTF-8 compile, GUI-style call sequence, 11 profiles / 12 cases per ROM, each case twice in fresh JVMs plus all cases consecutively in one JVM, manifest `tools/golden/manifests/baseline.tsv`.
+- Verified here (no ROM): compiles; profiles generate and round trip; no ROMs → `SKIPPED`, exit 2; a junk `.nds`/`.gba` file → rejected as unsupported, `NOTHING VERIFIED`, exit 2; `ROOT_PATH` check passes in the child JVM.
+
+NOT VERIFIED:
+- `run-baseline.ps1` has never run (no PowerShell here). Joshua runs it first with `--only none,typical`.
+- Any randomization of a real ROM. Determinism, timings, memory and temp-disk use are unknown until Joshua's run.
+
+Phase 1 exit: deterministic manifests for every ROM supplied (NDS first), unavailable ones listed as NOT VERIFIED.
 
 ## Phase 0 — what passed
 - Spec checked against the code. Corrections and additions written into `BUILD_SPEC.md` (each marked with a date). Summary below.
@@ -56,4 +70,4 @@ First actions for that session:
 5. Then Phase 0 is complete: report it, and start Phase 1 after Joshua approves.
 
 ## Next step
-Joshua: clone the repo locally, copy the NDS ROMs into `testroms/nds/`, send the ROM file list and phone RAM / Android version, and share the clone with this session through Remote Control (steps in `docs/SETUP.md`). Then Phase 0 exit → Phase 1 (baseline harness).
+Joshua: `git pull`, run `tools\golden\run-baseline.ps1 --only none,typical` (smoke test), paste the output; then the full run and commit/push `tools/golden/manifests/baseline.tsv` (or paste it). Remote Control from this cloud session to SpartanPC did not work ("not available", no reason given).
