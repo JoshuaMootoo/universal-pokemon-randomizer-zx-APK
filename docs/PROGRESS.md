@@ -12,7 +12,7 @@
   - `Pokemon - Platinum Version (USA) (Rev 1).nds` (128 MB, Gen 4)
   - `Pokemon - HeartGold Version (USA).nds` (128 MB, Gen 4)
   - `Pokemon - Black Version (USA, Europe) (NDSi Enhanced).nds` (256 MB, Gen 5)
-  - `Pokemon - Black Version 2 (USA, Europe) (NDSi Enhanced) Randomizer.nds` (275 MB, Gen 5). Joshua says this is a clean dump that was renamed. Phase 1 checks it with the engine's `isRomValid` and records the result.
+  - `Pokemon - Black Version 2 (USA, Europe) (NDSi Enhanced) Randomizer.nds` (275 MB, Gen 5). **Already randomized** (Joshua confirmed 2026-11-25), so it is not a valid baseline input. Phase 1 skips it and lists Black 2 as NOT VERIFIED until Joshua supplies a clean dump. Gen 5 is covered by Black.
 - Phone: Samsung Galaxy Z Fold8 Ultra, **12 GB RAM, Android 17**.
 - Engine compile check on this PC (Git Bash, Temurin `javac 21.0.7`, `-encoding UTF-8`): 105 files, exactly 2 errors, both in `Utils.java` (lines 41 and 119, `newgui`). Matches the cloud result.
 
@@ -54,7 +54,7 @@ Wrong or incomplete in the spec (now corrected there):
 
 ## Joshua's answers (2026-11-25)
 1. App name **"UPR ZX for Android (unofficial)"**, application ID **`com.joshuamootoo.uprzx`**.
-2. Wants every supported generation eventually; **start with NDS** (Gen 4 and 5). ROMs: Diamond, Platinum, HeartGold, Black, Black 2 (see above).
+2. Wants every supported generation eventually; **start with NDS** (Gen 4 and 5). Clean ROMs: Diamond, Platinum, HeartGold, Black. The Black 2 file is already randomized (see above).
 3. Phone: Samsung Galaxy Z Fold8 Ultra, 12 GB RAM, Android 17.
 4. PC: Windows 11, Android Studio already installed.
 5. ROMs are on his PC (`E:\Local\Documents\Roms`), not in the cloud.
@@ -67,7 +67,7 @@ Phase 1 records NDS manifests first. Phase 4 (first usable app) targets **Gen 4 
 
 ## NOT VERIFIED
 - Anything that randomizes a ROM, or runs on a phone or an emulator (starts in Phase 1 / Phase 3).
-- Whether the Black 2 file is unmodified (Phase 1 checks it).
+- Black 2: no clean dump available (the file in `testroms\` is a randomizer output).
 - The phone connecting over `adb` (not tried yet).
 
 ## Known issues
