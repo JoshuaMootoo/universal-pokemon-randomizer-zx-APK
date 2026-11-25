@@ -35,7 +35,8 @@
 Joshua approved starting Phase 1 (phone details can follow before Phase 3). ROM upload to the cloud session was too big, so the harness runs on his PC (manual route): Claude builds and pushes, Joshua runs one command and sends back the manifest.
 
 Done:
-- Tag `baseline-engine` = `7f00eb8` (upstream v4.6.1; `src/` identical to HEAD at tagging).
+- Tag `baseline-engine` = `7f00eb8` (upstream v4.6.1; `src/` identical to HEAD at tagging). The cloud session could not push the tag (the push is cut off; it may only push its branch), so `tools/golden/BASELINE_COMMIT` pins the hash and the scripts create the tag locally if it is missing.
+- The randomized Black 2 file is skipped through `tools/golden/exclude.txt` and recorded as NOT VERIFIED. The PowerShell script picks the first working JDK (JAVA_HOME, `javac` on PATH, `Android Studio1\jbr`, `Android Studio\jbr`).
 - Harness in `tools/golden/` (see its README): shim outside `src/`, UTF-8 compile, GUI-style call sequence, 11 profiles / 12 cases per ROM, each case twice in fresh JVMs plus all cases consecutively in one JVM, manifest `tools/golden/manifests/baseline.tsv`.
 - Verified here (no ROM): compiles; profiles generate and round trip; no ROMs → `SKIPPED`, exit 2; a junk `.nds`/`.gba` file → rejected as unsupported, `NOTHING VERIFIED`, exit 2; `ROOT_PATH` check passes in the child JVM.
 
