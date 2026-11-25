@@ -42,3 +42,43 @@ util/log
 out/
 .idea/
 *.iml
+# ---- Android port (added 2026-11-25, Phase 0) ----
+# ROMs, game updates, saves and keys must NEVER be committed (BUILD_SPEC hard rule 1).
+# Bracket patterns make these case-insensitive (git is case-sensitive on Linux).
+testroms/
+*.[gG][bB]
+*.[sS][gG][bB]
+*.[gG][bB][cC]
+*.[gG][bB][aA]
+*.[nN][dD][sS]
+*.[3][dD][sS]
+*.[cC][cC][iI]
+*.[cC][xX][iI]
+*.[cC][iI][aA]
+*.[aA][pP][pP]
+*.[zZ][iI][pP]
+*.[rR][aA][rR]
+*.7[zZ]
+*.[sS][aA][vV]
+*.[sS][rR][mM]
+# Decryption keys and signing material
+*.jks
+*.keystore
+keystore.properties
+*.pem
+*.p12
+*.key
+aes_keys.txt
+seeddb.bin
+# Randomizer outputs and logs from local runs
+*.rndp
+*.[lL][oO][gG]
+# Gradle / Android build output and local machine config
+.gradle/
+**/build/
+local.properties
+.kotlin/
+captures/
+*.apk
+*.aab
+*.idsig
