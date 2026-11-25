@@ -33,4 +33,5 @@ fi
 # 3. Run.
 java -Djava.awt.headless=true -cp "$CP" uprzx.golden.GoldenRunner \
   --roms "$REPO/testroms" --work "$WORK" --profiles tools/golden/profiles.tsv \
-  --manifest "$MANIFEST" --label "$LABEL" --engine-rev "$REV" "$@"
+  --manifest "$MANIFEST" --label "$LABEL" --engine-rev "$REV" \
+  --exclude-file tools/golden/exclude.txt "$@"

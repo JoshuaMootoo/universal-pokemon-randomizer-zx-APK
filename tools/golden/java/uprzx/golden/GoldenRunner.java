@@ -6,7 +6,7 @@
  *
  * Usage: GoldenRunner --roms DIR --work DIR --profiles FILE --manifest FILE --label NAME
  *                     [--engine-rev REV] [--gens 4,5] [--only PROFILE[,PROFILE]] [--xmx 4608M]
- *                     [--timeout-min 20] [--keep-outputs]
+ *                     [--timeout-min 20] [--keep-outputs] [--exclude-file FILE]
  * Exit codes: 0 all deterministic, 1 mismatch or fatal error, 2 no ROMs found (SKIPPED).
  */
 package uprzx.golden;
@@ -55,6 +55,22 @@ public final class GoldenRunner {
 
         List<String[]> profiles = readProfiles(profilesFile, only);
         List<Path> romFiles = findRoms(roms);
+        List<String> notVerified = new ArrayList<>();
+        if (opt.containsKey("exclude-file")) {
+            for (String line : Files.readAllLines(Paths.get(opt.get("exclude-file")), StandardCharsets.UTF_8)) {
+                if (line.startsWith("#") || line.trim().isEmpty()) continue;
+                String[] ex = line.split("\t", 2);
+                for (Iterator<Path> it = romFiles.iterator(); it.hasNext(); ) {
+                    Path p = it.next();
+                    if (p.getFileName().toString().contains(ex[0])) {
+                        it.remove();
+                        String why = p.getFileName() + ": " + (ex.length > 1 ? ex[1] : "excluded");
+                        notVerified.add(why);
+                        System.out.println("EXCLUDED, NOT VERIFIED: " + why);
+                    }
+                }
+            }
+        }
         System.out.println("Profiles: " + profiles.size() + ", ROM files found: " + romFiles.size());
         if (romFiles.isEmpty()) {
             System.out.println("SKIPPED: no ROM files under " + roms.toAbsolutePath()
@@ -123,7 +139,7 @@ public final class GoldenRunner {
             rows.addAll(runA);
         }
 
-        writeManifest(manifest, label, opt.getOrDefault("engine-rev", "unknown"), rows);
+        writeManifest(manifest, label, opt.getOrDefault("engine-rev", "unknown"), rows, notVerified);
         long det = rows.stream().filter(r -> "true".equals(r.get("deterministic"))).count();
         long err = rows.stream().filter(r -> !"OK".equals(r.get("status"))).count();
         long sp = rows.stream().filter(r -> "false".equals(r.get("sameProcessMatches"))).count();
@@ -131,6 +147,7 @@ public final class GoldenRunner {
         System.out.println("Cases: " + rows.size() + ", deterministic: " + det + ", errors: " + err
                 + ", differ in same process: " + sp);
         System.out.println("Manifest: " + manifest.toAbsolutePath());
+        for (String nv : notVerified) System.out.println("NOT VERIFIED (excluded): " + nv);
         long loaded = rows.stream().filter(r -> r.containsKey("deterministic")).count();
         if (!allOk) {
             System.out.println("RESULT: FAIL (see DIFFERENT lines)");
@@ -236,7 +253,8 @@ public final class GoldenRunner {
         }
     }
 
-    static void writeManifest(Path f, String label, String rev, List<Map<String, String>> rows) throws IOException {
+    static void writeManifest(Path f, String label, String rev, List<Map<String, String>> rows,
+                              List<String> notVerified) throws IOException {
         if (f.getParent() != null) Files.createDirectories(f.getParent());
         StringBuilder sb = new StringBuilder();
         sb.append("# Golden-master manifest: ").append(label).append('\n');
@@ -245,6 +263,7 @@ public final class GoldenRunner {
                 .append(" os=").append(System.getProperty("os.name")).append('\n');
         sb.append("# Compared fields: ").append(String.join(",", COMPARED)).append('\n');
         sb.append("# Diagnostic only: elapsedMs, peakHeapBytes, tempFilesOnDisk, tempBytesPeak. Contains no ROM data.\n");
+        for (String nv : notVerified) sb.append("# NOT VERIFIED (excluded): ").append(nv).append('\n');
         sb.append(String.join("\t", COLUMNS)).append('\n');
         for (Map<String, String> r : rows) {
             List<String> cells = new ArrayList<>();

@@ -1,0 +1,4 @@
+# Files under testroms/ that the golden master must NOT use, one per line:
+#   <part of the file name><TAB><reason>
+# A file is skipped if its name contains the text before the tab. Skipped files are listed as NOT VERIFIED.
+Black Version 2 (USA, Europe) (NDSi Enhanced) Randomizer	already a randomizer output, not a clean dump (Joshua, 2026-11-25)

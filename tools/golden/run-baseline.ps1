@@ -9,12 +9,25 @@ $Work = Join-Path $Repo "testroms\golden-work"
 $Label = "baseline"
 $Manifest = Join-Path $Repo "tools\golden\manifests\$Label.tsv"
 
-# Java: JAVA_HOME if set, else the JDK bundled with Android Studio.
-if ($env:JAVA_HOME -and (Test-Path (Join-Path $env:JAVA_HOME "bin\javac.exe"))) { $Jdk = $env:JAVA_HOME }
-else { $Jdk = "C:\Program Files\Android\Android Studio\jbr" }
+# Java: first JDK that actually starts, from JAVA_HOME, javac on PATH, or Android Studio's bundled JBR.
+# (On Joshua's PC "Android Studio" is a broken leftover and the real install is "Android Studio1".)
+$candidates = @()
+if ($env:JAVA_HOME) { $candidates += $env:JAVA_HOME }
+$onPath = Get-Command javac.exe -ErrorAction SilentlyContinue
+if ($onPath) { $candidates += (Split-Path (Split-Path $onPath.Source)) }
+$candidates += "C:\Program Files\Android\Android Studio1\jbr", "C:\Program Files\Android\Android Studio\jbr"
+$Jdk = $null
+foreach ($c in $candidates) {
+    $jc = Join-Path $c "bin\javac.exe"
+    if (Test-Path $jc) {
+        & $jc -version *> $null
+        if ($LASTEXITCODE -eq 0) { $Jdk = $c; break }
+    }
+}
+if (-not $Jdk) { throw "No working JDK found (tried: $($candidates -join '; ')). Set JAVA_HOME to a JDK 17 or newer." }
 $Java = Join-Path $Jdk "bin\java.exe"
 $Javac = Join-Path $Jdk "bin\javac.exe"
-if (-not (Test-Path $Javac)) { throw "javac not found at $Javac. Set JAVA_HOME to a JDK 17 or newer and try again." }
+Write-Host "Using JDK: $Jdk"
 & $Java -version
 
 # 1. The baseline must be the untouched engine.
@@ -43,5 +56,5 @@ $CP = (Join-Path $Work "classes") + ";" + (Join-Path $Work "root\shim") + ";" + 
 # 3. Run.
 & $Java "-Djava.awt.headless=true" -cp $CP uprzx.golden.GoldenRunner `
   --roms (Join-Path $Repo "testroms") --work $Work --profiles "tools\golden\profiles.tsv" `
-  --manifest $Manifest --label $Label --engine-rev $Rev @args
+  --manifest $Manifest --label $Label --engine-rev $Rev --exclude-file "tools\golden\exclude.txt" @args
 exit $LASTEXITCODE

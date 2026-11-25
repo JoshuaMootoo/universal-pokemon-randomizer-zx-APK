@@ -15,6 +15,11 @@ Linux/macOS: `tools/golden/run-baseline.sh` with the same options.
 
 Options: `--gens 4,5` (only those generations), `--only id1,id2` (profiles), `--timeout-min N` (per process, default 20), `--xmx 4608M` (Java heap, default as desktop), `--keep-outputs` (keep randomized ROMs in `testroms/golden-work/jobs` for boot tests).
 
+## Excluding files
+`exclude.txt` lists files under `testroms/` that must not be used (for example a ROM that is already randomized). They are skipped and recorded as NOT VERIFIED in the manifest.
+
+The PowerShell script uses the first JDK that actually runs, from: `JAVA_HOME`, `javac` on PATH, `C:\Program Files\Android\Android Studio1\jbr`, `C:\Program Files\Android\Android Studio\jbr`.
+
 ## What it does
 1. Refuses to run if `src/` differs from `baseline-engine`.
 2. Compiles the engine (minus the Swing GUI and launcher) with **UTF-8** source encoding and a one-class shim for `NewRandomizerGUI` (`shim/`), so nothing in `src/` is changed. The shim's location makes the engine's `ROOT_PATH` = `testroms/golden-work/root/`.
