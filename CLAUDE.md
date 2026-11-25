@@ -29,5 +29,6 @@ Until Phase 2 adds Gradle, the engine (minus GUI) can be compile-checked with:
 find src -name '*.java' -not -path 'src/com/dabomstew/pkrandom/newgui/*' -not -path 'src/launcher/*' > /tmp/files.txt && javac -nowarn -d /tmp/engine-classes @/tmp/files.txt
 ```
 (Expected at baseline: exactly 2 errors, both in `Utils.java`, from the `NewRandomizerGUI` import.)
+On Joshua's Windows PC, run it in Git Bash with a scratch folder instead of `/tmp`, and add `-encoding UTF-8`.
 
 Build and test commands will be added here as each phase creates them.

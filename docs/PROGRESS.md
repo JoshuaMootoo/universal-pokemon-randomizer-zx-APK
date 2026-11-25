@@ -1,8 +1,35 @@
 # Progress
 
-**Current phase:** 0 — Setup (in progress, waiting for Joshua's answers)
+**Current phase:** 0 — Setup (complete, waiting for Joshua's approval to start Phase 1)
 **Last updated:** 2026-11-25
-**Branch:** `claude/wizardly-wozniak-5zrlnc` (cloud session branch)
+**Branch:** `claude/wizardly-wozniak-5zrlnc` (one branch for all phases)
+**Where work runs:** Claude Code session on Joshua's PC, `E:\Local\Documents\universal-pokemon-randomizer-zx-APK`
+
+## Phase 0 — finished on Joshua's PC (2026-11-25)
+- Branch `claude/wizardly-wozniak-5zrlnc`, up to date with `origin` after `git fetch` (head `8f0f362` before this commit).
+- ROMs in `testroms\` (directly in the folder, not in `testroms\nds\`). `git status --porcelain --ignored testroms` shows `!! testroms/`; `git ls-files testroms` is empty. Files:
+  - `Pokemon - Diamond Version (USA) (Rev 5).nds` (64 MB, Gen 4)
+  - `Pokemon - Platinum Version (USA) (Rev 1).nds` (128 MB, Gen 4)
+  - `Pokemon - HeartGold Version (USA).nds` (128 MB, Gen 4)
+  - `Pokemon - Black Version (USA, Europe) (NDSi Enhanced).nds` (256 MB, Gen 5)
+  - `Pokemon - Black Version 2 (USA, Europe) (NDSi Enhanced) Randomizer.nds` (275 MB, Gen 5). Joshua says this is a clean dump that was renamed. Phase 1 checks it with the engine's `isRomValid` and records the result.
+- Phone: Samsung Galaxy Z Fold8 Ultra, **12 GB RAM, Android 17**.
+- Engine compile check on this PC (Git Bash, Temurin `javac 21.0.7`, `-encoding UTF-8`): 105 files, exactly 2 errors, both in `Utils.java` (lines 41 and 119, `newgui`). Matches the cloud result.
+
+### Toolchain on this PC (checked 2026-11-25)
+| Item | Found | Status |
+|---|---|---|
+| git | 2.45.2.windows.1 | OK |
+| Java on PATH | Temurin 21.0.7 (`C:\Program Files\Eclipse Adoptium\jdk-21.0.7.6-hotspot`) | OK for Phase 1 |
+| Android Studio | `C:\Program Files\Android\Android Studio1` (build 253.31033.145, bundled JBR 21.0.10) | OK. `C:\Program Files\Android\Android Studio` is a broken leftover (no `product-info.json`, its JBR does not start) |
+| `JAVA_HOME`, `ANDROID_HOME` | not set | Phase 2 writes `sdk.dir` in `local.properties` instead |
+| Android SDK | `C:\Users\joshu\AppData\Local\Android\Sdk` | platforms 34, 35; build-tools 34.0.0, 35.0.0, 35.0.1, 36.0.0 |
+| API 37 platform, build-tools 37.0.0 | **missing** | Needed before Phase 2/3, not Phase 1 |
+| SDK command-line tools | **missing** | Optional, lets Claude install SDK packages from the shell |
+| adb | SDK `platform-tools` 35.0.2; the `adb` on PATH is scrcpy's 36.0.0 | Two versions can fight over the adb server; update platform-tools |
+| Emulator | 36.4.10, AVD `Pixel_9a`; system images up to API 36 | API 37 and API 26 images needed later (Phase 3/7.2) |
+
+## Phase 0 — cloud session results
 
 ## Phase 0 — what passed
 - Spec checked against the code. Corrections and additions written into `BUILD_SPEC.md` (each marked with a date). Summary below.
@@ -27,8 +54,8 @@ Wrong or incomplete in the spec (now corrected there):
 
 ## Joshua's answers (2026-11-25)
 1. App name **"UPR ZX for Android (unofficial)"**, application ID **`com.joshuamootoo.uprzx`**.
-2. Wants every supported generation eventually; **start with NDS** (Gen 4 and 5). Exact ROM list still to come.
-3. Phone: Samsung Galaxy Z Fold8 Ultra. RAM and Android version still to come.
+2. Wants every supported generation eventually; **start with NDS** (Gen 4 and 5). ROMs: Diamond, Platinum, HeartGold, Black, Black 2 (see above).
+3. Phone: Samsung Galaxy Z Fold8 Ultra, 12 GB RAM, Android 17.
 4. PC: Windows 11, Android Studio already installed.
 5. ROMs are on his PC (`E:\Local\Documents\Roms`), not in the cloud.
 6. Claude may accept the Android SDK licence for him. Done: the cloud session has cmdline-tools, `platform-tools`, `platforms;android-37.0` and `build-tools;37.0.0` in `~/android-sdk`. The container is temporary, so later sessions reinstall it.
@@ -39,13 +66,14 @@ Wrong or incomplete in the spec (now corrected there):
 Phase 1 records NDS manifests first. Phase 4 (first usable app) targets **Gen 4 and 5** instead of Gen 1 to 3, and Phase 6 covers Gen 1 to 3. The flow is the same; NDS adds disk extraction and memory risk earlier, which Phase 3 measures anyway.
 
 ## NOT VERIFIED
-- Joshua's Android Studio SDK versions and `adb` on PATH.
-- Anything involving ROMs, a phone or an emulator.
+- Anything that randomizes a ROM, or runs on a phone or an emulator (starts in Phase 1 / Phase 3).
+- Whether the Black 2 file is unmodified (Phase 1 checks it).
+- The phone connecting over `adb` (not tried yet).
 
 ## Known issues
 - None in new code (there is none yet).
 
-## Handover to a session on Joshua's PC (2026-11-25)
+## Handover to a session on Joshua's PC (2026-11-25, done — kept for history)
 The cloud session could not reach Joshua's PC: Remote Control lists `universal-pokemon-randomizer-zx-APK` on SpartanPC as "not available" to cloud sessions, with no reason given. From here on, work runs in a Claude Code session on the PC, in `E:\Local\Documents\universal-pokemon-randomizer-zx-APK` (Windows 11, PowerShell, Android Studio installed).
 
 First actions for that session:
@@ -56,4 +84,4 @@ First actions for that session:
 5. Then Phase 0 is complete: report it, and start Phase 1 after Joshua approves.
 
 ## Next step
-Joshua: clone the repo locally, copy the NDS ROMs into `testroms/nds/`, send the ROM file list and phone RAM / Android version, and share the clone with this session through Remote Control (steps in `docs/SETUP.md`). Then Phase 0 exit → Phase 1 (baseline harness).
+Joshua: approve Phase 1 (baseline harness, NDS ROMs first; JVM only, no Android SDK needed). Before Phase 2, install in Android Studio's SDK Manager: Android API 37 SDK platform, Build-Tools 37.0.0, latest Platform-Tools and Command-line Tools.
