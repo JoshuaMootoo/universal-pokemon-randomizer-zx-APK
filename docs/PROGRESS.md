@@ -45,5 +45,15 @@ Phase 1 records NDS manifests first. Phase 4 (first usable app) targets **Gen 4 
 ## Known issues
 - None in new code (there is none yet).
 
+## Handover to a session on Joshua's PC (2026-11-25)
+The cloud session could not reach Joshua's PC: Remote Control lists `universal-pokemon-randomizer-zx-APK` on SpartanPC as "not available" to cloud sessions, with no reason given. From here on, work runs in a Claude Code session on the PC, in `E:\Local\Documents\universal-pokemon-randomizer-zx-APK` (Windows 11, PowerShell, Android Studio installed).
+
+First actions for that session:
+1. `git pull` on branch `claude/wizardly-wozniak-5zrlnc`.
+2. Confirm `testroms\nds\` holds Joshua's NDS ROMs and `git status` shows none of them.
+3. Check the toolchain: `git --version`, `java -version` (Android Studio's bundled JBR is fine), `adb version`, and API 37 in the SDK Manager (`docs/SETUP.md`).
+4. Get the two missing answers: phone RAM and Android version (Galaxy Z Fold8 Ultra), and the list of ROM files.
+5. Then Phase 0 is complete: report it, and start Phase 1 after Joshua approves.
+
 ## Next step
 Joshua: clone the repo locally, copy the NDS ROMs into `testroms/nds/`, send the ROM file list and phone RAM / Android version, and share the clone with this session through Remote Control (steps in `docs/SETUP.md`). Then Phase 0 exit → Phase 1 (baseline harness).
