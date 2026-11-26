@@ -70,7 +70,7 @@ public final class Profiles {
         // (found 2026-11-26: setIllegalEvos StackOverflowError, copyUpEvolutionsHelper OutOfMemoryError).
         Settings max = maxBase();
         setEnum(max, "EvolutionsMod", "RANDOM");
-        list.add(new Profile("max", "As many options on as compatible (all booleans, choice 2 modes, Random evolutions, all misc tweaks)", max, 424242L));
+        list.add(new Profile("max", "As many options on as compatible for Gen 4/5 (all booleans except alt formes/megas, choice 2 modes, Random evolutions, all misc tweaks)", max, 424242L));
 
         // "max-everylevel": max with Random Every Level, minus what the GUI turns off for it
         // (NewRandomizerGUI.enableOrDisableSubControls, "If Evolve Every Level is enabled").
@@ -92,6 +92,7 @@ public final class Profiles {
         every.setRemoveTimeBasedEvolutions(false);
         every.setTrainersForceFullyEvolved(false);
         every.setTrainersForceFullyEvolvedLevel(30); // GUI resets the slider to its minimum
+        every.setRivalCarriesStarterThroughout(false); // GUI disables it with Every Level
         list.add(new Profile("max-everylevel", "max with Random Every Level evolutions and the GUI's restrictions for it", every, 434343L));
 
         Settings misc = typical();
@@ -148,6 +149,22 @@ public final class Profiles {
         max.setTutorsGoodDamagingPercent(40);
         max.setCurrentMiscTweaks(allMiscTweaks());
         max.setSelectedEXPCurve(ExpCurve.SLOW);
+        // Alternate-forme and Mega Evolution options: the desktop GUI hides them for Gen 4/5 ROMs
+        // (romLoaded: visible only for gen >= 7, hasMegaEvolutions(), hasStarterAltFormes(), ...)
+        // and stores "selected && visible", so they never reach the engine there. With them on, the
+        // engine fails on Gen 4/5 (found 2026-11-26: NPE in randomizeEvolutions, starter index 505
+        // out of 494 in Gen4RomHandler.setStarters). Gen 6/7 coverage gets its own profile in Phase 7.
+        max.setEvosAllowAltFormes(false);
+        max.setAllowStarterAltFormes(false);
+        max.setAllowTrainerAlternateFormes(false);
+        max.setAllowWildAltFormes(false);
+        max.setAllowStaticAltFormes(false);
+        max.setAllowTotemAltFormes(false);
+        max.setSwapTrainerMegaEvos(false);
+        max.setSwapStaticMegaEvos(false);
+        max.setBaseStatsFollowMegaEvolutions(false);
+        max.setTypesFollowMegaEvolutions(false);
+        max.setAbilitiesFollowMegaEvolutions(false);
         return max;
     }
 

@@ -8,8 +8,8 @@ modes-2	1002	AAICBQIAAAMABgABAAQeAwIEEQAAEQABAQCAGAAAAAAAAAAAMgEyBAAgJDIICQAyAAI
 modes-3	1003	AAgEBggAAAMABgAIAAgeGAIIiAAAiABAEAABGAAAAAAAAAAAMgQyAQAICTIICQAyAAEABkdPTERFTrIuQjvjwziK	Every mode option set to choice 3 (wrapping)
 modes-4	1004	AAQBBQQAAAMABgAEABAeRAIBFAAAFAACBAACGAAAAAAAAAAAMgIyAgAQEjIICQAyAAIABkdPTERFTpGEHtbjwziK	Every mode option set to choice 4 (wrapping)
 modes-5	1005	AAICBgEAAAMABgACACAeIAYCCgAACgABAgCAGAAAAAAAAAAAMgEyBAAgJDIICQAyAAEABkdPTERFTvMmWnHjwziK	Every mode option set to choice 5 (wrapping)
-max	424242	e/PK/XIAAAMABgCxsgSog5v0cQeocag9CT9+/wAAAAAAf///xvm8/JXh5LwICQW8fw4SBkdPTERFTo65+4XjwziK	As many options on as compatible (all booleans, choice 2 modes, Random evolutions, all misc tweaks)
-max-everylevel	434343	GvLK9XIAAAMABgCxsgQeg5v0cQGocag9CT/8/wAAAAAAf///xvm8/JXh5LwICQW8fw4SBkdPTERFTun36tnjwziK	max with Random Every Level evolutions and the GUI's restrictions for it
+max	424242	e7OKfTIAAAMABgCxsgSog5s0cQeocag9CT8+3wAAAAAAf///xvm8PJXhZLwICQW8fw4SBkdPTERFToAiejTjwziK	As many options on as compatible for Gen 4/5 (all booleans except alt formes/megas, choice 2 modes, Random evolutions, all misc tweaks)
+max-everylevel	434343	GrKKdTIAAAMABgCxsgQeg5s0cQGocag9CT+83QAAAAAAf///xvm8PJXhZLwICQW8fw4SBkdPTERFTvqjusrjwziK	max with Random Every Level evolutions and the GUI's restrictions for it
 misc-all	777	KQgENgL///////8CAAIeAgcCCgAACgACCQABGQAAAAAAf///MgEyAQAICTIAAAAyAAEABkdPTERFTnauaLPjwziK	Typical plus every misc tweak
 limit-gen1	31337	KQgkNgL///////8CAAIeAgcCCgAACgACCQABGQAAAAEAAAAAMgEyAQAICTIAAAAyAAEABkdPTERFTt8pZ5njwziK	Typical with Limit Pokemon = Gen 1 only
 legacy-update	55555	BCgEBQT///////8EAAEeRAIBFAAAFABABAkBGAAAAAAAAAAAMgQyAQAICTIGAAAyAAIABkdPTERFTliCxDHjwziK	Legacy move update, base stat update, move data randomization
