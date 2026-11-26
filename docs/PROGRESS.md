@@ -44,6 +44,8 @@ NOT VERIFIED:
 - `run-baseline.ps1` has never run (no PowerShell here). Joshua runs it first with `--only none,typical`.
 - Any randomization of a real ROM. Determinism, timings, memory and temp-disk use are unknown until Joshua's run.
 
+Results so far (Joshua's PC, 2026-11-26): smoke test PASS (12/12); first full run PASS, 48/48 deterministic, 0 differ in the same process, but `max` crashed the engine on all 4 ROMs (see Known issues). Cases took 1–11 s; peak heap up to 362 MB for normal profiles (HeartGold modes-1).
+
 Phase 1 exit: deterministic manifests for every ROM supplied (NDS first), unavailable ones listed as NOT VERIFIED.
 
 ## Phase 0 — what passed
@@ -86,7 +88,7 @@ Phase 1 records NDS manifests first. Phase 4 (first usable app) targets **Gen 4 
 - The phone connecting over `adb` (not tried yet).
 
 ## Known issues
-- None in new code (there is none yet).
+- **Desktop engine crash found by the baseline (2026-11-26):** Evolutions "Random Every Level" combined with "follow evolutions" options makes the engine loop on evolution cycles: `AbstractRomHandler.setIllegalEvos` StackOverflowError (HeartGold, Platinum) and `copyUpEvolutionsHelper` OutOfMemoryError at a 4.6 GB heap (Black, Diamond). Deterministic. The desktop GUI prevents the combination (`enableOrDisableSubControls`, "If Evolve Every Level is enabled"); the Android option model must enforce the same rule (Phase 5), and the app must survive OutOfMemoryError (BUILD_SPEC 6.5). The `max` profile now uses Random evolutions; new profile `max-everylevel` covers Every Level with the GUI's restrictions.
 
 ## Handover to a session on Joshua's PC (2026-11-25, done — kept for history)
 The cloud session could not reach Joshua's PC: Remote Control lists `universal-pokemon-randomizer-zx-APK` on SpartanPC as "not available" to cloud sessions, with no reason given. From here on, work runs in a Claude Code session on the PC, in `E:\Local\Documents\universal-pokemon-randomizer-zx-APK` (Windows 11, PowerShell, Android Studio installed).

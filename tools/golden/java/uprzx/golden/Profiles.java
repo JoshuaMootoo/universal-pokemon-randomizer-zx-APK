@@ -64,29 +64,35 @@ public final class Profiles {
             list.add(new Profile("modes-" + k, "Every mode option set to choice " + k + " (wrapping)", s, 1000L + k));
         }
 
-        Settings max = base();
-        setAllEnums(max, 2);
-        setAllBooleans(max, true);
-        max.setCustomStarters(new int[]{1, 4, 7});
-        max.setUpdateMovesToGeneration(9);
-        max.setUpdateBaseStatsToGeneration(8);
-        max.setGuaranteedMoveCount(4);
-        max.setMovesetsGoodDamagingPercent(50);
-        max.setTrainersForceFullyEvolvedLevel(40);
-        max.setTrainersLevelModifier(20);
-        max.setEliteFourUniquePokemonNumber(2);
-        max.setAdditionalBossTrainerPokemon(2);
-        max.setAdditionalImportantTrainerPokemon(1);
-        max.setAdditionalRegularTrainerPokemon(1);
-        max.setMinimumCatchRateLevel(3);
-        max.setWildLevelModifier(10);
-        max.setStaticLevelModifier(10);
-        max.setTotemLevelModifier(10);
-        max.setTmsGoodDamagingPercent(40);
-        max.setTutorsGoodDamagingPercent(40);
-        max.setCurrentMiscTweaks(allMiscTweaks());
-        max.setSelectedEXPCurve(ExpCurve.SLOW);
-        list.add(new Profile("max", "As many options on as possible (all booleans, choice 2 modes, all misc tweaks)", max, 424242L));
+        // "max": every boolean on, mode options at choice 2, all misc tweaks. Evolutions use RANDOM,
+        // not choice 2 (RANDOM_EVERY_LEVEL): the desktop GUI forbids "follow evolutions" options with
+        // Every Level, and the engine overflows/runs out of memory on that combination
+        // (found 2026-11-26: setIllegalEvos StackOverflowError, copyUpEvolutionsHelper OutOfMemoryError).
+        Settings max = maxBase();
+        setEnum(max, "EvolutionsMod", "RANDOM");
+        list.add(new Profile("max", "As many options on as compatible (all booleans, choice 2 modes, Random evolutions, all misc tweaks)", max, 424242L));
+
+        // "max-everylevel": max with Random Every Level, minus what the GUI turns off for it
+        // (NewRandomizerGUI.enableOrDisableSubControls, "If Evolve Every Level is enabled").
+        Settings every = maxBase();
+        setEnum(every, "EvolutionsMod", "RANDOM_EVERY_LEVEL");
+        every.setBaseStatsFollowEvolutions(false);
+        every.setAbilitiesFollowEvolutions(false);
+        every.setTmsFollowEvolutions(false);
+        every.setTutorFollowEvolutions(false);
+        if (every.getTypesMod() == Settings.TypesMod.RANDOM_FOLLOW_EVOLUTIONS) setEnum(every, "TypesMod", "COMPLETELY_RANDOM");
+        if (every.getStartersMod() == Settings.StartersMod.RANDOM_WITH_TWO_EVOLUTIONS) setEnum(every, "StartersMod", "COMPLETELY_RANDOM");
+        if (!every.isBanIrregularAltFormes() && every.isEvosAllowAltFormes()) {
+            every.setBaseStatsFollowMegaEvolutions(false);
+            every.setTypesFollowMegaEvolutions(false);
+            every.setAbilitiesFollowMegaEvolutions(false);
+        }
+        every.setChangeImpossibleEvolutions(false);
+        every.setMakeEvolutionsEasier(false);
+        every.setRemoveTimeBasedEvolutions(false);
+        every.setTrainersForceFullyEvolved(false);
+        every.setTrainersForceFullyEvolvedLevel(30); // GUI resets the slider to its minimum
+        list.add(new Profile("max-everylevel", "max with Random Every Level evolutions and the GUI's restrictions for it", every, 434343L));
 
         Settings misc = typical();
         misc.setCurrentMiscTweaks(allMiscTweaks());
@@ -117,6 +123,32 @@ public final class Profiles {
         s.setRomName("GOLDEN");
         s.setSelectedEXPCurve(ExpCurve.MEDIUM_FAST); // GUI default (first combo entry)
         return s;
+    }
+
+    static Settings maxBase() throws Exception {
+        Settings max = base();
+        setAllEnums(max, 2);
+        setAllBooleans(max, true);
+        max.setCustomStarters(new int[]{1, 4, 7});
+        max.setUpdateMovesToGeneration(9);
+        max.setUpdateBaseStatsToGeneration(8);
+        max.setGuaranteedMoveCount(4);
+        max.setMovesetsGoodDamagingPercent(50);
+        max.setTrainersForceFullyEvolvedLevel(40);
+        max.setTrainersLevelModifier(20);
+        max.setEliteFourUniquePokemonNumber(2);
+        max.setAdditionalBossTrainerPokemon(2);
+        max.setAdditionalImportantTrainerPokemon(1);
+        max.setAdditionalRegularTrainerPokemon(1);
+        max.setMinimumCatchRateLevel(3);
+        max.setWildLevelModifier(10);
+        max.setStaticLevelModifier(10);
+        max.setTotemLevelModifier(10);
+        max.setTmsGoodDamagingPercent(40);
+        max.setTutorsGoodDamagingPercent(40);
+        max.setCurrentMiscTweaks(allMiscTweaks());
+        max.setSelectedEXPCurve(ExpCurve.SLOW);
+        return max;
     }
 
     static Settings typical() throws Exception {
