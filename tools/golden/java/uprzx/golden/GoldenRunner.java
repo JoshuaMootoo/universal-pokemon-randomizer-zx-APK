@@ -177,7 +177,13 @@ public final class GoldenRunner {
         cmd.add(logDir.toString());
         cmd.addAll(Arrays.asList(specs));
         Files.createDirectories(jobWork);
-        Path errFile = jobWork.resolve("last-stderr.txt");
+        // One stderr file per process, next to the logs, so engine stack traces are kept for every case.
+        Files.createDirectories(logDir);
+        String[] first = specs[0].split("\\|", 4);
+        String tag = specs.length == 1
+                ? GoldenCase.safe(Paths.get(first[0]).getFileName().toString()) + "__" + first[1] + "__" + first[2]
+                : GoldenCase.safe(Paths.get(first[0]).getFileName().toString()) + "__all";
+        Path errFile = logDir.resolve("stderr__" + tag + ".txt");
         Path outFile = jobWork.resolve("last-stdout.txt");
         Process p = new ProcessBuilder(cmd).redirectError(errFile.toFile()).redirectOutput(outFile.toFile()).start();
         List<Map<String, String>> results = new ArrayList<>();

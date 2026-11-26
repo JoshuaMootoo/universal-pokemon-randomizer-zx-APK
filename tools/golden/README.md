@@ -31,7 +31,7 @@ The call sequence copies the desktop GUI (`NewRandomizerGUI.performRandomization
 
 ## Results
 - `manifests/*.tsv` — committed. Hashes, settings strings, seeds, check values. **No ROM data.**
-- `testroms/golden-work/logs/` — full randomization logs (with UTF-8 BOM like desktop). **Not committed** (they describe ROM contents). Compare logs from run A and run B here when investigating a mismatch.
+- `testroms/golden-work/logs/` — full randomization logs (with UTF-8 BOM like desktop). **Not committed** (they describe ROM contents). Compare logs from run A and run B here when investigating a mismatch. Each process's error output (engine stack traces) is saved there as `stderr__<rom>__<profile>__<seed>.txt`.
 - Compared between runs: `status, romSha256, gen, romName, romCode, romValid, tweak flags, customNamesSha256, settings, checkValue, outputSha256, outputBytes, logSha256, error`.
 - Diagnostic only: `elapsedMs, peakHeapBytes, tempFilesOnDisk, tempBytesPeak`.
 - Log normalisation: line endings to `\n`, and the `Time elapsed:` line removed. Nothing else is excluded.
