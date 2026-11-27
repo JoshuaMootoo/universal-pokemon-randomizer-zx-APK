@@ -1,6 +1,6 @@
 # Progress
 
-**Current phase:** 1 — Baseline harness (harness built by the cloud session; waiting for Joshua to run it on his PC)
+**Current phase:** 1 — Baseline harness: **complete** (2026-11-27), waiting for Joshua's approval to start Phase 2
 **Last updated:** 2026-11-25
 **Branch:** `claude/wizardly-wozniak-5zrlnc` (one branch for all phases)
 **Where work runs:** Claude Code session on Joshua's PC, `E:\Local\Documents\universal-pokemon-randomizer-zx-APK`
@@ -45,6 +45,8 @@ NOT VERIFIED:
 - Any randomization of a real ROM. Determinism, timings, memory and temp-disk use are unknown until Joshua's run.
 
 Results so far (Joshua's PC, 2026-11-26): smoke test PASS (12/12); first full run PASS, 48/48 deterministic, 0 differ in the same process, but `max` crashed the engine on all 4 ROMs (see Known issues). Cases took 1–11 s; peak heap up to 362 MB for normal profiles (HeartGold modes-1).
+
+**Final baseline (commit 47afd71, Joshua's PC, Windows 11, Temurin 21.0.7, 2026-11-26):** `tools/golden/manifests/baseline.tsv`, 52 cases (Diamond, Platinum, HeartGold, Black × 12 profiles + 2nd typical seed), 52 OK, 52 deterministic in fresh JVMs, 52 identical when run consecutively in one JVM, 52 distinct output ROMs. Peak Java heap 502–750 MB (max profile), cases ≤ 8.5 s, temp extraction on disk ≤ 17 MB. **Phase 1 exit met for NDS.** NOT VERIFIED (no clean ROM supplied): Black 2, Gen 1–3, Gen 6–7.
 
 Phase 1 exit: deterministic manifests for every ROM supplied (NDS first), unavailable ones listed as NOT VERIFIED.
 
@@ -102,9 +104,5 @@ First actions for that session:
 5. Then Phase 0 is complete: report it, and start Phase 1 after Joshua approves.
 
 ## Next step
-Joshua approved Phase 1 (2026-11-25). The harness is already built and pushed (`tools/golden/`); a session on the PC should **run it, not rebuild it**:
-1. `git pull`
-2. Smoke test: `powershell -ExecutionPolicy Bypass -File tools\golden\run-baseline.ps1 --only none,typical`
-3. If that passes, the full run (same command without `--only`), then commit and push `tools/golden/manifests/baseline.tsv`.
-
+Joshua approves Phase 2 (`:core` Gradle module, engine changes from BUILD_SPEC 4 incl. the approved BLZCoder fix, facade). Phase 2 exit: no `java.awt`/`javax.swing` in compiled sources, resource tests pass, and `:core` reproduces `tools/golden/manifests/baseline.tsv` exactly (run on Joshua's PC).
 Before Phase 2, install in Android Studio's SDK Manager: Android API 37 SDK platform, Build-Tools 37.0.0, latest Platform-Tools and Command-line Tools.
