@@ -6,7 +6,8 @@
  *
  * Usage: GoldenRunner --roms DIR --work DIR --profiles FILE --manifest FILE --label NAME
  *                     [--engine-rev REV] [--gens 4,5] [--only PROFILE[,PROFILE]] [--xmx 4608M]
- *                     [--timeout-min 20] [--keep-outputs] [--exclude-file FILE]
+ *                     [--timeout-min 20] [--keep-outputs] [--exclude-file FILE] [--merge]
+ *   --merge: keep the existing manifest's rows and replace only the cases run now (same rom/profile/seed).
  * Exit codes: 0 all deterministic, 1 mismatch or fatal error, 2 no ROMs found (SKIPPED).
  */
 package uprzx.golden;
@@ -39,6 +40,7 @@ public final class GoldenRunner {
         Map<String, String> opt = new HashMap<>();
         for (int i = 0; i < a.length; i++) {
             if (a[i].equals("--keep-outputs")) opt.put("keep-outputs", "true");
+            else if (a[i].equals("--merge")) opt.put("merge", "true");
             else opt.put(a[i].substring(2), a[++i]);
         }
         Path roms = Paths.get(req(opt, "roms"));
@@ -139,7 +141,12 @@ public final class GoldenRunner {
             rows.addAll(runA);
         }
 
-        writeManifest(manifest, label, opt.getOrDefault("engine-rev", "unknown"), rows, notVerified);
+        List<Map<String, String>> toWrite = rows;
+        if (opt.containsKey("merge") && Files.exists(manifest)) {
+            toWrite = mergeWithExisting(manifest, opt.getOrDefault("engine-rev", "unknown"), rows);
+            System.out.println("Merged " + rows.size() + " case(s) into the existing manifest (" + toWrite.size() + " rows in total).");
+        }
+        writeManifest(manifest, label, opt.getOrDefault("engine-rev", "unknown"), toWrite, notVerified);
         long det = rows.stream().filter(r -> "true".equals(r.get("deterministic"))).count();
         long err = rows.stream().filter(r -> !"OK".equals(r.get("status"))).count();
         long sp = rows.stream().filter(r -> "false".equals(r.get("sameProcessMatches"))).count();
@@ -224,6 +231,34 @@ public final class GoldenRunner {
             results.add(m);
         }
         return results;
+    }
+
+    static String key(Map<String, String> r) {
+        return r.get("rom") + "|" + r.get("profile") + "|" + r.get("seed");
+    }
+
+    /** Existing rows, with any case run now replaced by its new result. Refuses a different engine revision. */
+    static List<Map<String, String>> mergeWithExisting(Path manifest, String rev, List<Map<String, String>> fresh) throws IOException {
+        List<String> lines = Files.readAllLines(manifest, StandardCharsets.UTF_8);
+        for (String l : lines) {
+            if (l.startsWith("# engine-rev=") && !l.startsWith("# engine-rev=" + rev + " ")) {
+                throw new IllegalStateException("Cannot merge: existing manifest was made from a different engine revision: " + l);
+            }
+        }
+        Map<String, Map<String, String>> byKey = new LinkedHashMap<>();
+        List<String> header = null;
+        for (String l : lines) {
+            if (l.startsWith("#") || l.isEmpty()) continue;
+            String[] cells = l.split("\t", -1);
+            if (header == null) { header = Arrays.asList(cells); continue; }
+            Map<String, String> m = new LinkedHashMap<>();
+            for (int i = 0; i < header.size() && i < cells.length; i++) m.put(header.get(i), cells[i]);
+            byKey.put(key(m), m);
+        }
+        for (Map<String, String> r : fresh) byKey.put(key(r), r);
+        List<Map<String, String>> out = new ArrayList<>(byKey.values());
+        out.sort(Comparator.comparing((Map<String, String> r) -> r.get("rom")));
+        return out;
     }
 
     static boolean sameCompared(Map<String, String> a, Map<String, String> b) {

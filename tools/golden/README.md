@@ -13,7 +13,7 @@ powershell -ExecutionPolicy Bypass -File tools\golden\run-baseline.ps1 --only no
 ```
 Linux/macOS: `tools/golden/run-baseline.sh` with the same options.
 
-Options: `--gens 4,5` (only those generations), `--only id1,id2` (profiles), `--timeout-min N` (per process, default 20), `--xmx 4608M` (Java heap, default as desktop), `--keep-outputs` (keep randomized ROMs in `testroms/golden-work/jobs` for boot tests).
+Options: `--gens 4,5` (only those generations), `--only id1,id2` (profiles), `--timeout-min N` (per process, default 20), `--xmx 4608M` (Java heap, default as desktop), `--merge` (re-run only the selected cases and replace their rows in the existing manifest; refuses a manifest from another engine revision), `--keep-outputs` (keep randomized ROMs in `testroms/golden-work/jobs` for boot tests).
 
 ## Excluding files
 `exclude.txt` lists files under `testroms/` that must not be used (for example a ROM that is already randomized). They are skipped and recorded as NOT VERIFIED in the manifest.

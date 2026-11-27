@@ -1,6 +1,6 @@
 # Progress
 
-**Current phase:** 1 — Baseline harness: **complete** (2026-11-27), waiting for Joshua's approval to start Phase 2
+**Current phase:** 1 — Baseline harness: reopened (2026-11-27) to add the Gen 1–3, more Gen 4–5, and Gen 6–7 ROMs Joshua supplied
 **Last updated:** 2026-11-25
 **Branch:** `claude/wizardly-wozniak-5zrlnc` (one branch for all phases)
 **Where work runs:** Claude Code session on Joshua's PC, `E:\Local\Documents\universal-pokemon-randomizer-zx-APK`
@@ -47,6 +47,8 @@ NOT VERIFIED:
 Results so far (Joshua's PC, 2026-11-26): smoke test PASS (12/12); first full run PASS, 48/48 deterministic, 0 differ in the same process, but `max` crashed the engine on all 4 ROMs (see Known issues). Cases took 1–11 s; peak heap up to 362 MB for normal profiles (HeartGold modes-1).
 
 **Final baseline (commit 47afd71, Joshua's PC, Windows 11, Temurin 21.0.7, 2026-11-26):** `tools/golden/manifests/baseline.tsv`, 52 cases (Diamond, Platinum, HeartGold, Black × 12 profiles + 2nd typical seed), 52 OK, 52 deterministic in fresh JVMs, 52 identical when run consecutively in one JVM, 52 distinct output ROMs. Peak Java heap 502–750 MB (max profile), cases ≤ 8.5 s, temp extraction on disk ≤ 17 MB. **Phase 1 exit met for NDS.** NOT VERIFIED (no clean ROM supplied): Black 2, Gen 1–3, Gen 6–7.
+
+**New ROMs (2026-11-27):** Joshua added 24 more (28 total): Red, Blue, Yellow, Gold, Silver, Crystal, Ruby, Sapphire, Emerald, FireRed, LeafGreen, Pearl, SoulSilver, White, Black 2 (clean dump; the randomized file is gone), White 2, X, Y, Omega Ruby, Alpha Sapphire, Sun, Moon, Ultra Sun, Ultra Moon (3DS as European `.cci`). Smoke test of Gen 1–3 and 6–7 with `none,typical`: 57/57 OK and deterministic. 3DS cases take 27–69 s. **Peak Java heap at -Xmx4608M: Gen 6 ≈ 1.2–1.4 GB, Gen 7 ≈ 3.8–4.6 GB** (upper bound only: with a large -Xmx the JVM collects lazily; Red/Blue/Yellow also show 608 MB). The minimum heap each game needs is still to be measured (planned with `--xmx`), and is the key input for Phase 3. Not covered yet: 3DS LayeredFS output and game updates (NOT VERIFIED; harness support to be added).
 
 Phase 1 exit: deterministic manifests for every ROM supplied (NDS first), unavailable ones listed as NOT VERIFIED.
 
