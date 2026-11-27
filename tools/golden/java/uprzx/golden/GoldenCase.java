@@ -108,6 +108,16 @@ public final class GoldenCase {
             r.put("romValid", Boolean.toString(handler.isRomValid()));
             r.put("tempFilesOnDisk", Long.toString(countTempFiles(root)));
 
+            // The desktop GUI only offers "Random Every Level" evolutions for Gen 3+ (romLoaded:
+            // peRandomEveryLevelRadioButton.setVisible(pokemonGeneration >= 3)). On Crystal the engine
+            // overflows its evolution/moveset table with it (Gen2RomHandler.writeEvosAndMovesLearnt has
+            // no space check), found 2026-11-27. Record such cases as not applicable instead of running them.
+            if (profileId.equals("max-everylevel") && handler.generationOfPokemon() < 3) {
+                r.put("status", "N/A");
+                r.put("error", "not applicable: the desktop GUI does not offer Random Every Level evolutions for Gen 1-2");
+                return r;
+            }
+
             Settings settings = Settings.fromString(settingsIn);
             Settings.TweakForROMFeedback fb = settings.tweakForRom(handler);
             r.put("tweakChangedStarter", Boolean.toString(fb.isChangedStarter()));

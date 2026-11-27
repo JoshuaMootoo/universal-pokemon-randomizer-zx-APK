@@ -148,7 +148,9 @@ public final class GoldenRunner {
         }
         writeManifest(manifest, label, opt.getOrDefault("engine-rev", "unknown"), toWrite, notVerified);
         long det = rows.stream().filter(r -> "true".equals(r.get("deterministic"))).count();
-        long err = rows.stream().filter(r -> !"OK".equals(r.get("status"))).count();
+        long err = rows.stream().filter(r -> !"OK".equals(r.get("status")) && !"N/A".equals(r.get("status"))).count();
+        long na = rows.stream().filter(r -> "N/A".equals(r.get("status"))).count();
+        if (na > 0) System.out.println("Not applicable to the loaded game (see error column): " + na);
         long sp = rows.stream().filter(r -> "false".equals(r.get("sameProcessMatches"))).count();
         System.out.println();
         System.out.println("Cases: " + rows.size() + ", deterministic: " + det + ", errors: " + err
