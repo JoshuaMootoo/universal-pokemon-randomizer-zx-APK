@@ -250,6 +250,8 @@ public final class GoldenRunner {
         try (Stream<Path> s = Files.walk(dir)) {
             return s.filter(Files::isRegularFile)
                     .filter(p -> !p.toString().contains("golden-work"))
+                    // 3DS game updates are .cia files too; they live in testroms/updates/ and are not ROMs.
+                    .filter(p -> { for (Path part : dir.relativize(p)) if (part.toString().equalsIgnoreCase("updates")) return false; return true; })
                     .filter(p -> {
                         String n = p.getFileName().toString();
                         int dot = n.lastIndexOf('.');
