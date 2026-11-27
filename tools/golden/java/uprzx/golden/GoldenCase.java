@@ -38,6 +38,9 @@ public final class GoldenCase {
             new Gen7RomHandler.Factory()
     };
 
+    /** Profiles that switch on (nearly) everything get the desktop GUI's per-ROM visibility mask. */
+    static final Set<String> GUI_MASKED_PROFILES = new HashSet<>(Arrays.asList("max", "max-everylevel"));
+
     public static void main(String[] args) throws Exception {
         String expectedRoot = args[0];
         Path workDir = Paths.get(args[1]);
@@ -110,6 +113,9 @@ public final class GoldenCase {
             r.put("tweakChangedStarter", Boolean.toString(fb.isChangedStarter()));
             r.put("tweakRemovedCodeTweaks", Boolean.toString(fb.isRemovedCodeTweaks()));
             settings.setRomName(handler.getROMName()); // GUI createSettingsFromState does this
+            if (GUI_MASKED_PROFILES.contains(profileId)) {
+                GuiVisibility.apply(settings, handler); // options the GUI hides for this ROM never reach the engine
+            }
 
             RandomSource.seed(seed);
             settings.setCustomNames(FileFunctions.getCustomNames());

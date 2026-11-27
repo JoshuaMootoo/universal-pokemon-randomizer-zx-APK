@@ -29,6 +29,8 @@ The PowerShell script uses the first JDK that actually runs, from: `JAVA_HOME`, 
 
 The call sequence copies the desktop GUI (`NewRandomizerGUI.performRandomization`), including `romHandler.setLog`, not the CLI. See `java/uprzx/golden/GoldenCase.java`.
 
+For `max` and `max-everylevel`, `GuiVisibility.java` then switches off the options the desktop GUI hides for the loaded ROM (its `romLoaded` rules), because the GUI never passes hidden options to the engine.
+
 ## Results
 - `manifests/*.tsv` — committed. Hashes, settings strings, seeds, check values. **No ROM data.**
 - `testroms/golden-work/logs/` — full randomization logs (with UTF-8 BOM like desktop). **Not committed** (they describe ROM contents). Compare logs from run A and run B here when investigating a mismatch. Each process's error output (engine stack traces) is saved there as `stderr__<rom>__<profile>__<seed>.txt`.
