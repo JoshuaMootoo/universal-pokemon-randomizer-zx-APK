@@ -25,6 +25,7 @@ package com.dabomstew.pkrandom;
 /*--  You should have received a copy of the GNU General Public License     --*/
 /*--  along with this program. If not, see <http://www.gnu.org/licenses/>.  --*/
 /*----------------------------------------------------------------------------*/
+/*  Modified 2026-11-28 for "UPR ZX for Android (unofficial)": ROOT_PATH comes from system property uprzx.rootPath and fails loudly if unset (BUILD_SPEC 4.2).  */
 
 import java.io.File;
 
@@ -45,13 +46,22 @@ public class SysConstants {
     public static final String tclassesFile = "trainerclasses.txt";
     public static final String nnamesFile = "nicknames.txt";
 
+    /** System property the host must set, before anything reads SysConstants, to the working root folder. */
+    public static final String ROOT_PATH_PROPERTY = "uprzx.rootPath";
+
     private static String getRootPath() {
-        try {
-            File fh = Utils.getExecutionLocation().getParentFile();
-            return fh.getAbsolutePath() + File.separator;
-        } catch (Exception e) {
-            return "./";
+        // Android port: the root is set by the host (app-private storage), not derived from the JAR location.
+        // There is deliberately no fallback: an unwritable "./" made NDSRom/NCCH keep extracted files in RAM.
+        String root = System.getProperty(ROOT_PATH_PROPERTY);
+        if (root == null || root.isEmpty()) {
+            throw new IllegalStateException("SysConstants.ROOT_PATH is not configured: set system property "
+                    + ROOT_PATH_PROPERTY + " to a writable folder before using the engine");
         }
+        File fh = new File(root);
+        if (!fh.isDirectory() || !fh.canWrite()) {
+            throw new IllegalStateException("SysConstants.ROOT_PATH is not a writable folder: " + root);
+        }
+        return fh.getAbsolutePath() + File.separator;
     }
 
 }

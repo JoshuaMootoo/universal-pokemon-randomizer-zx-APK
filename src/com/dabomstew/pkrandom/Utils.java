@@ -26,6 +26,7 @@ package com.dabomstew.pkrandom;
 /*--  You should have received a copy of the GNU General Public License     --*/
 /*--  along with this program. If not, see <http://www.gnu.org/licenses/>.  --*/
 /*----------------------------------------------------------------------------*/
+/*  Modified 2026-11-28 for "UPR ZX for Android (unofficial)": removed the NewRandomizerGUI import and getExecutionLocation() (BUILD_SPEC 4.1).  */
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -38,7 +39,6 @@ import java.util.Base64;
 import java.util.zip.CRC32;
 
 import com.dabomstew.pkrandom.exceptions.InvalidSupplementFilesException;
-import com.dabomstew.pkrandom.newgui.NewRandomizerGUI;
 
 public class Utils {
 
@@ -113,13 +113,6 @@ public class Utils {
             throw new InvalidSupplementFilesException(InvalidSupplementFilesException.Type.CUSTOM_NAMES,
                     "Can't use this preset because you have a different set " + "of custom names to the creator.");
         }
-    }
-
-    public static File getExecutionLocation() throws UnsupportedEncodingException {
-        URL location = NewRandomizerGUI.class.getProtectionDomain().getCodeSource().getLocation();
-        String file = location.getFile();
-        String plusEncoded = file.replaceAll("\\+", "%2b");
-        return new File(java.net.URLDecoder.decode(plusEncoded, "UTF-8"));
     }
 
     public static class InvalidROMException extends Exception {
