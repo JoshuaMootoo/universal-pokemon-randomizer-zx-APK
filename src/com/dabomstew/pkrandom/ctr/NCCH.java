@@ -20,6 +20,7 @@ package com.dabomstew.pkrandom.ctr;
 /*--  You should have received a copy of the GNU General Public License     --*/
 /*--  along with this program. If not, see <http://www.gnu.org/licenses/>.  --*/
 /*----------------------------------------------------------------------------*/
+/*  Modified 2026-11-28 for "UPR ZX for Android (unofficial)": rebuildRomfs and LayeredFS output copy files in chunks instead of whole-file byte arrays (memory change M1).  */
 
 import com.dabomstew.pkrandom.FileFunctions;
 import com.dabomstew.pkrandom.SysConstants;
@@ -468,23 +469,31 @@ public class NCCH {
         // Using the new file metadata table, output the file data
         int fileDataOffset = FileFunctions.readFullInt(level3HeaderData, 0x24);
         long endOfFileDataOffset = 0;
+        byte[] copyBuffer = new byte[1 << 20];
         for (FileMetadata metadata : fileMetadataList) {
             System.out.println("NCCH: Writing file " + metadata.file.fullPath + " to romfs");
             // Users have sent us bug reports with really bizarre errors here that seem to indicate
             // broken metadata; do this in a try-catch solely so we can log the metadata if we fail
             try {
-                byte[] fileData;
-                if (metadata.file.fileChanged) {
-                    fileData = metadata.file.getOverrideContents();
-                } else {
-                    fileData = new byte[metadata.file.size];
-                    baseRom.seek(metadata.file.offset);
-                    baseRom.readFully(fileData);
-                }
+                // Android port (memory, change M1): copy in chunks instead of reading each file into one
+                // byte[], which ran out of memory on large Gen 6 files. The bytes written are the same.
                 long currentDataOffset = newLevel3Offset + fileDataOffset + metadata.fileDataOffset;
                 fNew.seek(currentDataOffset);
-                fNew.write(fileData);
-                endOfFileDataOffset = currentDataOffset + fileData.length;
+                long fileLength;
+                if (metadata.file.fileChanged) {
+                    fileLength = metadata.file.copyOverrideContentsTo(fNew::write);
+                } else {
+                    fileLength = metadata.file.size;
+                    baseRom.seek(metadata.file.offset);
+                    long remaining = fileLength;
+                    while (remaining > 0) {
+                        int n = (int) Math.min(copyBuffer.length, remaining);
+                        baseRom.readFully(copyBuffer, 0, n);
+                        fNew.write(copyBuffer, 0, n);
+                        remaining -= n;
+                    }
+                }
+                endOfFileDataOffset = currentDataOffset + fileLength;
             } catch (Exception e) {
                 String message = String.format("Error when building romfs: File: %s, offset: %s, size: %s",
                         metadata.file.fullPath, metadata.offset, metadata.file.size);
@@ -633,8 +642,12 @@ public class NCCH {
         buffer.append(romfsPathComponents[romfsPathComponents.length - 1]);
         String romfsFilePath = buffer.toString();
         FileOutputStream fos = new FileOutputStream(new File(romfsFilePath));
-        fos.write(file.getOverrideContents());
-        fos.close();
+        // Android port (memory, change M1): stream instead of one byte[] for the whole file.
+        try {
+            file.copyOverrideContentsTo(fos::write);
+        } finally {
+            fos.close();
+        }
     }
 
     public boolean isDecrypted() throws IOException {

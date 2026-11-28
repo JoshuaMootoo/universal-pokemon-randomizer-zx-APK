@@ -20,6 +20,7 @@ package com.dabomstew.pkrandom.ctr;
 /*--  You should have received a copy of the GNU General Public License     --*/
 /*--  along with this program. If not, see <http://www.gnu.org/licenses/>.  --*/
 /*----------------------------------------------------------------------------*/
+/*  Modified 2026-11-28 for "UPR ZX for Android (unofficial)": added copyOverrideContentsTo() to stream changed files (memory change M1).  */
 
 import com.dabomstew.pkrandom.FileFunctions;
 
@@ -105,6 +106,36 @@ public class RomfsFile {
                 System.arraycopy(data, 0, this.data, 0, data.length);
             }
         }
+    }
+
+    /** Receives file data in chunks (RandomAccessFile::write and OutputStream::write both fit). */
+    public interface ChunkSink {
+        void write(byte[] buf, int off, int len) throws IOException;
+    }
+
+    /**
+     * Android port (memory, change M1): writes exactly the bytes getOverrideContents() would return, in
+     * chunks, without holding the whole file in memory. Returns the number of bytes written.
+     * Only for files that have been extracted (status TO_FILE or TO_RAM).
+     */
+    public long copyOverrideContentsTo(ChunkSink out) throws IOException {
+        if (status == Extracted.TO_RAM) {
+            out.write(this.data, 0, this.data.length);
+            return this.data.length;
+        }
+        if (status != Extracted.TO_FILE) {
+            throw new IllegalStateException("File was never extracted: " + fullPath);
+        }
+        long written = 0;
+        byte[] buf = new byte[1 << 20];
+        try (java.io.InputStream in = new java.io.FileInputStream(parent.getTmpFolder() + this.extFilename)) {
+            int n;
+            while ((n = in.read(buf)) > 0) {
+                out.write(buf, 0, n);
+                written += n;
+            }
+        }
+        return written;
     }
 
     // returns null if no override
