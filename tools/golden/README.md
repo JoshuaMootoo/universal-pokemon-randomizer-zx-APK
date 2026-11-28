@@ -1,5 +1,11 @@
 # Golden-master harness (BUILD_SPEC 7.1)
 
+Two entry points:
+- `run-baseline.ps1` / `.sh`: the **untouched** engine, built from tag `baseline-engine` in a git worktree (`testroms/golden-work/baseline-src`), writes `manifests/baseline.tsv`.
+- `run-core.ps1` / `.sh`: the **`:core`** library built by Gradle, writes `manifests/core.tsv` and compares every case with `baseline.tsv` (`--compare-to`), failing on any difference.
+
+Both accept the same runner options. `--mascot` also hashes the mascot image (seeded with the case seed) as the GUI draws it after loading; compare mascots with a reference made by `run-baseline --mascot`.
+
 Records what the **untouched** desktop engine (git tag `baseline-engine`, upstream v4.6.1) produces for each ROM, settings profile and seed. Every later version (`:core`, then the Android app) must reproduce these hashes exactly.
 
 ## Run it (Windows)
@@ -21,7 +27,7 @@ Options: `--gens 4,5` (only those generations), `--only id1,id2` (profiles), `--
 The PowerShell script uses the first JDK that actually runs, from: `JAVA_HOME`, `javac` on PATH, `C:\Program Files\Android\Android Studio1\jbr`, `C:\Program Files\Android\Android Studio\jbr`.
 
 ## What it does
-1. Refuses to run if `src/` differs from `baseline-engine`.
+1. Baseline: builds the engine from the `baseline-engine` tag (a clean git worktree), so later changes to `src/` never leak in.
 2. Compiles the engine (minus the Swing GUI and launcher) with **UTF-8** source encoding and a one-class shim for `NewRandomizerGUI` (`shim/`), so nothing in `src/` is changed. The shim's location makes the engine's `ROOT_PATH` = `testroms/golden-work/root/`.
 3. Finds every ROM under `testroms/` (any depth, by extension), except in `testroms/updates/`, which is for 3DS game update `.cia` files.
 4. For each ROM and each case (profile + seed from `profiles.tsv`): runs it in a **fresh JVM twice**, then runs all cases again **one after another in one JVM**.

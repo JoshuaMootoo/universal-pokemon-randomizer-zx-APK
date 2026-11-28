@@ -8,6 +8,8 @@
  *                     [--engine-rev REV] [--gens 4,5] [--only PROFILE[,PROFILE]] [--xmx 4608M]
  *                     [--timeout-min 20] [--keep-outputs] [--exclude-file FILE] [--merge]
  *   --merge: keep the existing manifest's rows and replace only the cases run now (same rom/profile/seed).
+ *   --mascot: also hash the mascot image (seeded with the case seed), as the GUI draws it after loading.
+ *   --compare-to FILE: after the run, compare every case with the same rom/profile/seed in FILE.
  * Exit codes: 0 all deterministic, 1 mismatch or fatal error, 2 no ROMs found (SKIPPED).
  */
 package uprzx.golden;
@@ -26,11 +28,11 @@ public final class GoldenRunner {
     /** Fields that must be identical between runs. Everything else is diagnostic. */
     static final List<String> COMPARED = Arrays.asList("status", "romSha256", "gen", "romName", "romCode",
             "romValid", "tweakChangedStarter", "tweakRemovedCodeTweaks", "customNamesSha256", "settings",
-            "checkValue", "outputSha256", "outputBytes", "logSha256", "error");
+            "checkValue", "outputSha256", "outputBytes", "logSha256", "error", "mascotSize", "mascotSha256");
 
     static final List<String> COLUMNS = Arrays.asList("rom", "profile", "seed", "status", "gen", "romCode",
             "romName", "romValid", "romSha256", "customNamesSha256", "settings", "tweakChangedStarter",
-            "tweakRemovedCodeTweaks", "checkValue", "outputSha256", "outputBytes", "logSha256", "error",
+            "tweakRemovedCodeTweaks", "checkValue", "outputSha256", "outputBytes", "logSha256", "error", "mascotSize", "mascotSha256",
             "deterministic", "sameProcessMatches", "elapsedMs", "peakHeapBytes", "tempFilesOnDisk", "tempBytesPeak");
 
     static final Set<String> ROM_EXT = new HashSet<>(Arrays.asList(
@@ -41,6 +43,7 @@ public final class GoldenRunner {
         for (int i = 0; i < a.length; i++) {
             if (a[i].equals("--keep-outputs")) opt.put("keep-outputs", "true");
             else if (a[i].equals("--merge")) opt.put("merge", "true");
+            else if (a[i].equals("--mascot")) opt.put("mascot", "true");
             else opt.put(a[i].substring(2), a[++i]);
         }
         Path roms = Paths.get(req(opt, "roms"));
@@ -81,6 +84,7 @@ public final class GoldenRunner {
         }
 
         String root = work.resolve("root").toString() + File.separator;
+        Files.createDirectories(work.resolve("root"));
         Path jobWork = work.resolve("jobs");
         Path logs = work.resolve("logs");
         List<Map<String, String>> rows = new ArrayList<>();
@@ -157,6 +161,15 @@ public final class GoldenRunner {
                 + ", differ in same process: " + sp);
         System.out.println("Manifest: " + manifest.toAbsolutePath());
         for (String nv : notVerified) System.out.println("NOT VERIFIED (excluded): " + nv);
+        if (opt.containsKey("compare-to")) {
+            int[] c = compareTo(Paths.get(opt.get("compare-to")), rows);
+            System.out.println("Compared with " + opt.get("compare-to") + ": " + c[0] + " identical, " + c[1]
+                    + " DIFFERENT, " + c[2] + " with no reference case");
+            if (c[1] > 0) {
+                System.out.println("RESULT: FAIL (output differs from the reference, see DIFFERS lines)");
+                System.exit(1);
+            }
+        }
         long loaded = rows.stream().filter(r -> r.containsKey("deterministic")).count();
         if (!allOk) {
             System.out.println("RESULT: FAIL (see DIFFERENT lines)");
@@ -178,6 +191,8 @@ public final class GoldenRunner {
         cmd.add("-Djava.awt.headless=true");
         cmd.add("-Dfile.encoding=UTF-8");
         if (opt.containsKey("keep-outputs")) cmd.add("-Dgolden.keepOutputs=true");
+        if (opt.containsKey("mascot")) cmd.add("-Dgolden.mascot=true");
+        cmd.add("-Duprzx.rootPath=" + root); // :core reads ROOT_PATH from this; the untouched engine ignores it
         cmd.add("-cp");
         cmd.add(System.getProperty("java.class.path"));
         cmd.add("uprzx.golden.GoldenCase");
@@ -243,7 +258,7 @@ public final class GoldenRunner {
     static List<Map<String, String>> mergeWithExisting(Path manifest, String rev, List<Map<String, String>> fresh) throws IOException {
         List<String> lines = Files.readAllLines(manifest, StandardCharsets.UTF_8);
         for (String l : lines) {
-            if (l.startsWith("# engine-rev=") && !l.startsWith("# engine-rev=" + rev + " ")) {
+            if (rev != null && l.startsWith("# engine-rev=") && !l.startsWith("# engine-rev=" + rev + " ")) {
                 throw new IllegalStateException("Cannot merge: existing manifest was made from a different engine revision: " + l);
             }
         }
@@ -261,6 +276,32 @@ public final class GoldenRunner {
         List<Map<String, String>> out = new ArrayList<>(byKey.values());
         out.sort(Comparator.comparing((Map<String, String> r) -> r.get("rom")));
         return out;
+    }
+
+    /** {identical, different, missing}. Mascot fields are only compared when the reference has them. */
+    static int[] compareTo(Path reference, List<Map<String, String>> fresh) throws IOException {
+        Map<String, Map<String, String>> ref = new HashMap<>();
+        for (Map<String, String> m : mergeWithExisting(reference, null, new ArrayList<>())) ref.put(key(m), m);
+        int same = 0, diff = 0, missing = 0;
+        for (Map<String, String> r : fresh) {
+            Map<String, String> b = ref.get(key(r));
+            if (b == null) {
+                missing++;
+                System.out.println("  NO REFERENCE: " + key(r));
+                continue;
+            }
+            List<String> d = new ArrayList<>();
+            for (String k : COMPARED) {
+                if (k.startsWith("mascot") && b.getOrDefault(k, "").isEmpty()) continue;
+                if (!Objects.equals(r.getOrDefault(k, ""), b.getOrDefault(k, ""))) d.add(k);
+            }
+            if (d.isEmpty()) same++;
+            else {
+                diff++;
+                System.out.println("  DIFFERS from reference: " + key(r) + " -> " + d);
+            }
+        }
+        return new int[]{same, diff, missing};
     }
 
     static boolean sameCompared(Map<String, String> a, Map<String, String> b) {

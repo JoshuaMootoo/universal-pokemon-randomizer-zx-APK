@@ -39,4 +39,6 @@ tools/golden/run-baseline.sh                          # full baseline
 Windows: `powershell -ExecutionPolicy Bypass -File tools\golden\run-baseline.ps1 [same options]`.
 Exit 0 = pass, 1 = mismatch, 2 = nothing verified (no ROMs). Compile the engine with `-encoding UTF-8` always.
 
-Build and test commands will be added here as each phase creates them.
+Gradle (Phase 2+): `./gradlew :core:test` (unit tests, no ROMs), `./gradlew :core:jar`. Windows: `gradlew.bat`.
+Golden master against `:core`: `tools/golden/run-core.sh` / `run-core.ps1` (compares with `baseline.tsv`, exit 1 on any difference).
+**Preserve line endings when editing engine files**: some are CRLF, some LF. Never rewrite a whole file through a tool that normalises them.

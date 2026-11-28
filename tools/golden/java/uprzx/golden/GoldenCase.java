@@ -109,6 +109,13 @@ public final class GoldenCase {
             r.put("romValid", Boolean.toString(handler.isRomValid()));
             r.put("tempFilesOnDisk", Long.toString(countTempFiles(root)));
 
+            // Optional mascot check (BUILD_SPEC 7.2): the desktop GUI draws the mascot right after loading.
+            // It uses the main random source, so seed it first; randomize() reseeds, so output is unaffected.
+            if (Boolean.getBoolean("golden.mascot")) {
+                RandomSource.seed(seed);
+                mascot(handler, r);
+            }
+
             // The desktop GUI only offers "Random Every Level" evolutions for Gen 3+ (romLoaded:
             // peRandomEveryLevelRadioButton.setVisible(pokemonGeneration >= 3)). On Crystal the engine
             // overflows its evolution/moveset table with it (Gen2RomHandler.writeEvosAndMovesLearnt has
@@ -172,6 +179,27 @@ public final class GoldenCase {
             }
         }
         return r;
+    }
+
+    /**
+     * Hashes the mascot pixels. Uses reflection so the same harness works on the untouched engine
+     * (java.awt.image.BufferedImage) and on :core (PixelImage): both have getWidth, getHeight, getRGB(x, y).
+     */
+    static void mascot(RomHandler handler, Map<String, String> r) throws Exception {
+        Object img = RomHandler.class.getMethod("getMascotImage").invoke(handler);
+        if (img == null) {
+            r.put("mascotSize", "none");
+            return;
+        }
+        Class<?> c = img.getClass();
+        int w = (Integer) c.getMethod("getWidth").invoke(img);
+        int h = (Integer) c.getMethod("getHeight").invoke(img);
+        java.lang.reflect.Method get = c.getMethod("getRGB", int.class, int.class);
+        java.nio.ByteBuffer buf = java.nio.ByteBuffer.allocate(8 + 4 * w * h);
+        buf.putInt(w).putInt(h);
+        for (int y = 0; y < h; y++) for (int x = 0; x < w; x++) buf.putInt((Integer) get.invoke(img, x, y));
+        r.put("mascotSize", w + "x" + h);
+        r.put("mascotSha256", sha256(buf.array()));
     }
 
     /** Log comparison ignores the elapsed-time line and line-ending differences (BUILD_SPEC 7.1). */
