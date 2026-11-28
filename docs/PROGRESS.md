@@ -1,6 +1,6 @@
 # Progress
 
-**Current phase:** 1 — Baseline harness: reopened (2026-11-27) to add the Gen 1–3, more Gen 4–5, and Gen 6–7 ROMs Joshua supplied
+**Current phase:** 1 — Baseline harness: **complete** (2026-11-28), waiting for Joshua's approval and 3DS decision before Phase 2
 **Last updated:** 2026-11-25
 **Branch:** `claude/wizardly-wozniak-5zrlnc` (one branch for all phases)
 **Where work runs:** Claude Code session on Joshua's PC, `E:\Local\Documents\universal-pokemon-randomizer-zx-APK`
@@ -54,6 +54,10 @@ Results so far (Joshua's PC, 2026-11-26): smoke test PASS (12/12); first full ru
 - After the GUI mask, `max` profiles pass on all 28 ROMs except `max-everylevel` on Crystal: `Gen2RomHandler.writeEvosAndMovesLearnt` overflows its table (index 6233 of 6233; Gen 1 has an "out of space" check, Gen 2 does not). The GUI does not offer Every Level for Gen 1–2, so the harness now records `max-everylevel` on Gen 1–2 as `N/A` with the reason. **Desktop engine bug, not fixed** (only reachable from the GUI by loading a settings file with Every Level onto a Gen 2 ROM); the Android option model must hide Every Level for Gen 1–2 as desktop does.
 - **Memory test at -Xmx1024M (commit 41b87b5, `tools/golden/manifests/mem-1024.tsv`, profiles none + max):** all Gen 1–5 games and X/Y complete, and their outputs are byte-identical to the 4.6 GB baseline (heap size does not change output). Omega Ruby / Alpha Sapphire run out of memory late (~30 s); Sun, Moon, Ultra Sun, Ultra Moon run out early (~6–8 s, probably while loading). The `peakHeapBytes` figures before 2026-11-28 summed per-pool peaks and overstate the peak (e.g. 1628 MB reported under a 1024 MB cap); they are now sampled. Next: find the minimum heap for ORAS and Gen 7 and where they run out of memory (stack traces), and get the phone's `dalvik.vm.heapsize`.
 - **Joshua's phone (adb, 2026-11-28):** Galaxy Z Fold8 Ultra, Android 17, `dalvik.vm.heapgrowthlimit` = `dalvik.vm.heapsize` = **512m** (so `largeHeap` gives no extra Java heap on this device), MemTotal ≈ 10.8 GB, MemAvailable ≈ 3.4 GB at the time, SwapTotal ≈ 12 GB (zram/RAM Plus; does not raise the Java heap cap). **The yardstick for "fits on the phone" is a 512 MB Java heap**; the 2 GB desktop test was dropped in favour of a 512 MB run of all games.
+- **Memory test at -Xmx512M (Joshua's PC, 2026-11-28, run before pulling the sampled-heap fix; `mem-512.tsv` to be pushed):** all 11 Gen 1–3 and all 9 Gen 4–5 games complete with `none` and `max` (heaviest ≈ 440 MB, Black 2/White 2 max, old metric). **All 8 3DS games run out of memory.**
+  - Gen 6 (X, Y, OR, AS), after ~47–62 s, at `NCCH.rebuildRomfs` line 480: every unchanged romfs file is copied by reading it whole into one `byte[]`. A chunked copy would write identical bytes with a few MB of buffer.
+  - Gen 7 (Sun, Moon, US, UM): while loading, in `GARCArchive.readFrames` for the `WildPokemon` encounter GARC (`Gen7RomHandler.getAreaData`); with `max`, also in `GARCArchive.getBytes` (ByteArrayOutputStream growth) when saving it. The whole archive, every sub-file and a re-encoded copy are held in the Java heap for the run.
+  - Proposed engine changes are listed in `docs/ENGINE_CHANGES.md` (not approved, not started).
 - Known risk for Phase 2: Joshua's git converts line endings (`core.autocrlf`), so on his PC the engine's text resources (`config/*.ini`, `.tbl`, `Bundle.properties`) are CRLF, while a cloud/CI build gets LF. The baseline was made from CRLF files. Phase 2 must check whether resource line endings change output (golden test from an LF checkout) and pin them with `.gitattributes` if needed.
 
 Phase 1 exit: deterministic manifests for every ROM supplied (NDS first), unavailable ones listed as NOT VERIFIED.
