@@ -88,6 +88,7 @@ public final class GoldenCase {
         Path out = null;
         try {
             for (MemoryPoolMXBean pool : ManagementFactory.getMemoryPoolMXBeans()) pool.resetPeakUsage();
+            HeapSampler.start();
             deleteTempFolders(root);
             r.put("romSha256", sha256(rom));
 
@@ -163,7 +164,7 @@ public final class GoldenCase {
             } catch (Throwable ignored) {
             }
             r.put("elapsedMs", Long.toString(System.currentTimeMillis() - start));
-            r.put("peakHeapBytes", Long.toString(peakHeap()));
+            r.put("peakHeapBytes", Long.toString(HeapSampler.stop()));
             try {
                 deleteTempFolders(root);
                 if (out != null && !Boolean.getBoolean("golden.keepOutputs")) Files.deleteIfExists(out);
@@ -193,12 +194,38 @@ public final class GoldenCase {
         }
     }
 
-    private static long peakHeap() {
-        long sum = 0;
-        for (MemoryPoolMXBean pool : ManagementFactory.getMemoryPoolMXBeans()) {
-            if (pool.getType() == MemoryType.HEAP && pool.getPeakUsage() != null) sum += pool.getPeakUsage().getUsed();
+    /**
+     * Highest total heap in use, sampled every 20 ms on a background thread. (Adding up the
+     * per-pool peaks, as before 2026-11-28, overstated it: the pools peak at different times.)
+     * Includes garbage not yet collected, so it is an upper bound; the minimum heap a game needs
+     * is found by running with a smaller --xmx.
+     */
+    static final class HeapSampler {
+        private static volatile boolean running;
+        private static volatile long max;
+        private static Thread thread;
+
+        static void start() {
+            max = 0;
+            running = true;
+            thread = new Thread(() -> {
+                while (running) {
+                    long used = ManagementFactory.getMemoryMXBean().getHeapMemoryUsage().getUsed();
+                    if (used > max) max = used;
+                    try { Thread.sleep(20); } catch (InterruptedException e) { return; }
+                }
+            }, "heap-sampler");
+            thread.setDaemon(true);
+            thread.start();
         }
-        return sum;
+
+        static long stop() {
+            running = false;
+            long used = ManagementFactory.getMemoryMXBean().getHeapMemoryUsage().getUsed();
+            if (used > max) max = used;
+            try { if (thread != null) thread.join(1000); } catch (InterruptedException ignored) { }
+            return max;
+        }
     }
 
     private static List<File> tempFolders(String root) {

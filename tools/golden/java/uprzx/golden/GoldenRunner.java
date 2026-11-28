@@ -106,7 +106,7 @@ public final class GoldenRunner {
                     skipRom = true;
                     break;
                 }
-                if (i == 0 && "ERROR".equals(ra.get("status")) && !ra.containsKey("gen")) {
+                if (i == 0 && "unsupported ROM (no handler)".equals(ra.get("error"))) {
                     System.out.println("  could not load: " + ra.get("error"));
                     rows.add(ra);
                     skipRom = true;
