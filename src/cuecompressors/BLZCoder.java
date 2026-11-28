@@ -30,6 +30,7 @@ import com.dabomstew.pkrandom.FileFunctions;
 /*--  You should have received a copy of the GNU General Public License     --*/
 /*--  along with this program. If not, see <http://www.gnu.org/licenses/>.  --*/
 /*----------------------------------------------------------------------------*/
+/*  Modified 2026-11-28 for "UPR ZX for Android (unofficial)": EXIT() throws instead of calling System.exit (BUILD_SPEC 4.2a).  */
 
 public class BLZCoder {
 
@@ -122,8 +123,10 @@ public class BLZCoder {
     }
 
     private void EXIT(String text) {
+        // Android port: System.exit(0) would silently kill the whole app on a malformed DS file.
+        // Throw instead, so the caller reports an error (BUILD_SPEC 4.2a).
         System.out.print(text);
-        System.exit(0);
+        throw new IllegalStateException("BLZ: " + text.trim());
     }
 
     private void Save(String filename, int[] buffer, int length) {
