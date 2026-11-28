@@ -1,6 +1,6 @@
 # Progress
 
-**Current phase:** 1 — Baseline harness: **complete** (2026-11-28), waiting for Joshua's approval and 3DS decision before Phase 2
+**Current phase:** 2 — `:core` (code done 2026-11-28; waiting for Joshua's golden and memory runs on his PC)
 **Last updated:** 2026-11-25
 **Branch:** `claude/wizardly-wozniak-5zrlnc` (one branch for all phases)
 **Where work runs:** Claude Code session on Joshua's PC, `E:\Local\Documents\universal-pokemon-randomizer-zx-APK`
@@ -30,6 +30,23 @@
 | Emulator | 36.4.10, AVD `Pixel_9a`; system images up to API 36 | API 37 and API 26 images needed later (Phase 3/7.2) |
 
 ## Phase 0 — cloud session results
+
+## Phase 2 — status (2026-11-28)
+Joshua approved Phase 2 with memory changes M1 and M2 (2026-11-28).
+
+Done (cloud session, no ROMs):
+- Gradle 9.9.2 wrapper (SHA-256 pinned), `:core` built from `../src` (UTF-8, Java 17 bytecode, GUI and launcher excluded); JAR has every `config/` and `patches/` file and `newgui/Bundle.properties` at their package paths.
+- Engine changes 4.1+4.2, 4.3 (`PixelImage`), 4.2a (`BLZCoder`), M1, M2: see `docs/ENGINE_CHANGES.md`. No class in `core.jar` references `java/awt` or `javax/swing`. Line endings of every changed engine file preserved.
+- Facade `uprzx.core.Engine` / `LoadedRom` (initialize, load with desktop checks and typed errors, info, mascot, game update, tweakForRom, randomize, close with temp cleanup, .rnqs read/write).
+- `./gradlew :core:test`: 13 tests, 0 failures (PixelImage vs java.awt, BLZ exit fix, disk-backed GARC vs in-memory, resources, load errors, sweep, settings round trip).
+- Harness: `run-baseline` now builds the untouched engine from a `baseline-engine` worktree; new `run-core` builds `:core` and compares every case with `baseline.tsv`; `--mascot` hashes the seeded mascot.
+
+NOT VERIFIED (needs Joshua's PC):
+- `:core` reproduces all 364 baseline cases (`run-core.ps1`).
+- 3DS memory with M1/M2 at a 512 MB heap.
+- Mascot pixels equal to desktop (`--mascot` runs).
+- `run-core.ps1` and the worktree change in `run-baseline.ps1` have only run as their bash equivalents here.
+- The facade itself is not used by the golden harness (the harness repeats the GUI sequence); it is exercised end to end in Phase 3.
 
 ## Phase 1 — status (2026-11-25)
 Joshua approved starting Phase 1 (phone details can follow before Phase 3). ROM upload to the cloud session was too big, so the harness runs on his PC (manual route): Claude builds and pushes, Joshua runs one command and sends back the manifest.
@@ -116,5 +133,4 @@ First actions for that session:
 5. Then Phase 0 is complete: report it, and start Phase 1 after Joshua approves.
 
 ## Next step
-Joshua approves Phase 2 (`:core` Gradle module, engine changes from BUILD_SPEC 4 incl. the approved BLZCoder fix, facade). Phase 2 exit: no `java.awt`/`javax.swing` in compiled sources, resource tests pass, and `:core` reproduces `tools/golden/manifests/baseline.tsv` exactly (run on Joshua's PC).
-Before Phase 2, install in Android Studio's SDK Manager: Android API 37 SDK platform, Build-Tools 37.0.0, latest Platform-Tools and Command-line Tools.
+Joshua runs on his PC: `run-core.ps1 --only none` (smoke), 3DS at 512 MB, mascot reference and comparison, then the full `run-core.ps1` (several hours), and pushes the manifests. Phase 2 exit: no `java.awt`/`javax.swing` (done), resource tests pass (done), `:core` matches the baseline (pending).
