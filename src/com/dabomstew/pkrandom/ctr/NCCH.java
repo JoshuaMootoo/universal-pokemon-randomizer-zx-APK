@@ -20,7 +20,7 @@ package com.dabomstew.pkrandom.ctr;
 /*--  You should have received a copy of the GNU General Public License     --*/
 /*--  along with this program. If not, see <http://www.gnu.org/licenses/>.  --*/
 /*----------------------------------------------------------------------------*/
-/*  Modified 2026-11-28 for "UPR ZX for Android (unofficial)": rebuildRomfs and LayeredFS output copy files in chunks instead of whole-file byte arrays (memory change M1).  */
+/*  Modified 2026-11-28 for "UPR ZX for Android (unofficial)": rebuildRomfs and LayeredFS output copy files in chunks (memory change M1); extractFileToTempFile/writeFileFromFile (memory change M2).  */
 
 import com.dabomstew.pkrandom.FileFunctions;
 import com.dabomstew.pkrandom.SysConstants;
@@ -746,6 +746,21 @@ public class NCCH {
             return romfsFiles.get(filename).getContents();
         } else {
             return null;
+        }
+    }
+
+    /** Android port (memory, change M2): extracts a romfs file to disk in chunks; null if not possible. */
+    public File extractFileToTempFile(String filename) throws IOException {
+        if (romfsFiles.containsKey(filename)) {
+            return romfsFiles.get(filename).extractToTempFile();
+        }
+        return null;
+    }
+
+    /** Android port (memory, change M2): writeFile with the new contents taken from a file on disk. */
+    public void writeFileFromFile(String filename, File newContents) throws IOException {
+        if (romfsFiles.containsKey(filename)) {
+            romfsFiles.get(filename).writeOverrideFromFile(newContents);
         }
     }
 

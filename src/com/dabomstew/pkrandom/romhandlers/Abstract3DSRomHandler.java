@@ -23,6 +23,7 @@ package com.dabomstew.pkrandom.romhandlers;
 /*--  You should have received a copy of the GNU General Public License     --*/
 /*--  along with this program. If not, see <http://www.gnu.org/licenses/>.  --*/
 /*----------------------------------------------------------------------------*/
+/*  Modified 2026-11-28 for "UPR ZX for Android (unofficial)": readGARC with compressThese is disk-backed, writeGARC streams it (memory change M2).  */
 
 import com.dabomstew.pkrandom.FileFunctions;
 import com.dabomstew.pkrandom.ctr.GARCArchive;
@@ -181,10 +182,32 @@ public abstract class Abstract3DSRomHandler extends AbstractRomHandler {
     }
 
     protected GARCArchive readGARC(String subpath, List<Boolean> compressThese) throws IOException {
+        // Android port (memory, change M2): keep the archive on disk and load only the directories the
+        // randomizer reads (compressThese). Falls back to the in-memory path if the file cannot be on disk.
+        NCCH source = (gameUpdate != null && gameUpdate.hasFile(subpath)) ? gameUpdate : baseRom;
+        java.io.File backing = source.extractFileToTempFile(subpath);
+        if (backing != null) {
+            return new GARCArchive(backing, compressThese);
+        }
         return new GARCArchive(readFile(subpath),compressThese);
     }
 
     protected void writeGARC(String subpath, GARCArchive garc) throws IOException {
+        if (garc.isFileBacked()) {
+            // Android port (memory, change M2): same as writeFile(subpath, garc.getBytes()), through a file.
+            java.io.File out = new java.io.File(baseRom.getTmpFolder()
+                    + "uprzx_garc_" + subpath.replaceAll("[^A-Za-z0-9_\\.]+", "") + ".tmp");
+            try {
+                garc.writeTo(out);
+                baseRom.writeFileFromFile(subpath, out);
+                if (gameUpdate != null && gameUpdate.hasFile(subpath)) {
+                    gameUpdate.writeFileFromFile(subpath, out);
+                }
+            } finally {
+                out.delete();
+            }
+            return;
+        }
         this.writeFile(subpath,garc.getBytes());
     }
 

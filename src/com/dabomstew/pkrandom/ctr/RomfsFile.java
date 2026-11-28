@@ -20,7 +20,7 @@ package com.dabomstew.pkrandom.ctr;
 /*--  You should have received a copy of the GNU General Public License     --*/
 /*--  along with this program. If not, see <http://www.gnu.org/licenses/>.  --*/
 /*----------------------------------------------------------------------------*/
-/*  Modified 2026-11-28 for "UPR ZX for Android (unofficial)": added copyOverrideContentsTo() to stream changed files (memory change M1).  */
+/*  Modified 2026-11-28 for "UPR ZX for Android (unofficial)": added copyOverrideContentsTo() (memory change M1), extractToTempFile() and writeOverrideFromFile() (memory change M2).  */
 
 import com.dabomstew.pkrandom.FileFunctions;
 
@@ -106,6 +106,66 @@ public class RomfsFile {
                 System.arraycopy(data, 0, this.data, 0, data.length);
             }
         }
+    }
+
+    /**
+     * Android port (memory, change M2): like the first getContents() call, extracts this file to its temp
+     * file (same status, temp file name and originalCRC), but in chunks instead of one byte[] for the
+     * whole file. Returns the temp file, or null if files cannot be written to disk (status TO_RAM).
+     */
+    public File extractToTempFile() throws IOException {
+        if (this.status == Extracted.NOT) {
+            if (!parent.isWritingEnabled()) {
+                return null;
+            }
+            parent.reopenROM();
+            RandomAccessFile rom = parent.getBaseRom();
+            rom.seek(this.offset);
+            this.extFilename = fullPath.replaceAll("[^A-Za-z0-9_\\.]+", "");
+            File tmpFile = new File(parent.getTmpFolder() + extFilename);
+            java.util.zip.CRC32 crc = new java.util.zip.CRC32();
+            byte[] buf = new byte[1 << 20];
+            try (FileOutputStream fos = new FileOutputStream(tmpFile)) {
+                long remaining = this.size;
+                while (remaining > 0) {
+                    int n = (int) Math.min(buf.length, remaining);
+                    rom.readFully(buf, 0, n);
+                    crc.update(buf, 0, n);
+                    fos.write(buf, 0, n);
+                    remaining -= n;
+                }
+            }
+            originalCRC = crc.getValue();
+            tmpFile.deleteOnExit();
+            this.status = Extracted.TO_FILE;
+            this.data = null;
+            return tmpFile;
+        } else if (this.status == Extracted.TO_FILE) {
+            return new File(parent.getTmpFolder() + this.extFilename);
+        }
+        return null;
+    }
+
+    /**
+     * Android port (memory, change M2): same as writeOverride(data) where data is the contents of
+     * newContents, without loading it into memory. Needs the file to be (or be extractable) on disk.
+     */
+    public void writeOverrideFromFile(File newContents) throws IOException {
+        if (status == Extracted.NOT) {
+            // temp extract, as writeOverride does
+            extractToTempFile();
+        }
+        if (status != Extracted.TO_FILE) {
+            throw new IllegalStateException("Cannot override from a file unless extracted to disk: " + fullPath);
+        }
+        long length = newContents.length();
+        if (length > Integer.MAX_VALUE) {
+            throw new IOException("File too large: " + fullPath);
+        }
+        fileChanged = true;
+        size = (int) length;
+        java.nio.file.Files.copy(newContents.toPath(), new File(parent.getTmpFolder() + this.extFilename).toPath(),
+                java.nio.file.StandardCopyOption.REPLACE_EXISTING);
     }
 
     /** Receives file data in chunks (RandomAccessFile::write and OutputStream::write both fit). */
