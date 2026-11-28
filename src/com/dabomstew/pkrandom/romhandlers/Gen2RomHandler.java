@@ -23,8 +23,8 @@ package com.dabomstew.pkrandom.romhandlers;
 /*--  You should have received a copy of the GNU General Public License     --*/
 /*--  along with this program. If not, see <http://www.gnu.org/licenses/>.  --*/
 /*----------------------------------------------------------------------------*/
+/*  Modified 2026-11-28 for "UPR ZX for Android (unofficial)": java.awt BufferedImage/Graphics replaced by PixelImage (BUILD_SPEC 4.3).  */
 
-import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -2932,7 +2932,7 @@ public class Gen2RomHandler extends AbstractGBCRomHandler {
     }
 
     @Override
-    public BufferedImage getMascotImage() {
+    public PixelImage getMascotImage() {
         Pokemon mascot = randomPokemon();
         while (mascot.number == Species.unown) {
             // Unown is banned as handling it would add a ton of extra effort.
@@ -2982,7 +2982,7 @@ public class Gen2RomHandler extends AbstractGBCRomHandler {
 
         byte[] data = mscSprite.getFlattenedData();
 
-        BufferedImage bim = GFXFunctions.drawTiledImage(data, palette, w, h, 8);
+        PixelImage bim = GFXFunctions.drawTiledImage(data, palette, w, h, 8);
         GFXFunctions.pseudoTransparency(bim, palette[0]);
 
         return bim;

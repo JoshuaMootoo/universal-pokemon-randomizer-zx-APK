@@ -23,8 +23,8 @@ package com.dabomstew.pkrandom.romhandlers;
 /*--  You should have received a copy of the GNU General Public License     --*/
 /*--  along with this program. If not, see <http://www.gnu.org/licenses/>.  --*/
 /*----------------------------------------------------------------------------*/
+/*  Modified 2026-11-28 for "UPR ZX for Android (unofficial)": java.awt BufferedImage/Graphics replaced by PixelImage (BUILD_SPEC 4.3).  */
 
-import java.awt.image.BufferedImage;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintStream;
@@ -5699,7 +5699,7 @@ public class Gen4RomHandler extends AbstractDSRomHandler {
     }
 
     @Override
-    public BufferedImage getMascotImage() {
+    public PixelImage getMascotImage() {
         try {
             Pokemon pk = randomPokemon();
             NARCArchive pokespritesNARC = this.readNARC(romEntry.getFile("PokemonGraphics"));
@@ -5746,7 +5746,7 @@ public class Gen4RomHandler extends AbstractDSRomHandler {
 
             // Deliberately chop off the right half of the image while still
             // correctly indexing the array.
-            BufferedImage bim = new BufferedImage(80, 80, BufferedImage.TYPE_INT_ARGB);
+            PixelImage bim = new PixelImage(80, 80);
             for (int y = 0; y < 80; y++) {
                 for (int x = 0; x < 80; x++) {
                     int value = ((spriteData[y * 40 + x / 4]) >> (x % 4) * 4) & 0x0F;

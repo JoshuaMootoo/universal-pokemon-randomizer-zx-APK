@@ -22,6 +22,7 @@ package com.dabomstew.pkrandom.romhandlers;
 /*--  You should have received a copy of the GNU General Public License     --*/
 /*--  along with this program. If not, see <http://www.gnu.org/licenses/>.  --*/
 /*----------------------------------------------------------------------------*/
+/*  Modified 2026-11-28 for "UPR ZX for Android (unofficial)": java.awt BufferedImage/Graphics replaced by PixelImage (BUILD_SPEC 4.3).  */
 
 import com.dabomstew.pkrandom.*;
 import com.dabomstew.pkrandom.constants.*;
@@ -32,8 +33,6 @@ import com.dabomstew.pkrandom.exceptions.RandomizerIOException;
 import com.dabomstew.pkrandom.pokemon.*;
 import pptxt.N3DSTxtHandler;
 
-import java.awt.*;
-import java.awt.image.BufferedImage;
 import java.io.*;
 import java.util.*;
 import java.util.List;
@@ -4125,7 +4124,7 @@ public class Gen6RomHandler extends Abstract3DSRomHandler {
     }
 
     @Override
-    public BufferedImage getMascotImage() {
+    public PixelImage getMascotImage() {
         try {
             GARCArchive pokespritesGARC = this.readGARC(romEntry.getFile("PokemonGraphics"),false);
             int pkIndex = this.random.nextInt(pokespritesGARC.files.size()-2)+1;
@@ -4145,25 +4144,24 @@ public class Gen6RomHandler extends Abstract3DSRomHandler {
 
             int bpp = paletteCount <= 0x10 ? 4 : 8;
             // Output to 64x144 tiled image to prepare for unscrambling
-            BufferedImage bim = GFXFunctions.drawTiledZOrderImage(uncompressedPic, palette, 0, width, height, bpp);
+            PixelImage bim = GFXFunctions.drawTiledZOrderImage(uncompressedPic, palette, 0, width, height, bpp);
 
             // Unscramble the above onto a 96x96 canvas
-            BufferedImage finalImage = new BufferedImage(40, 30, BufferedImage.TYPE_INT_ARGB);
-            Graphics g = finalImage.getGraphics();
-            g.drawImage(bim, 0, 0, 64, 64, 0, 0, 64, 64, null);
-            g.drawImage(bim, 64, 0, 96, 8, 0, 64, 32, 72, null);
-            g.drawImage(bim, 64, 8, 96, 16, 32, 64, 64, 72, null);
-            g.drawImage(bim, 64, 16, 96, 24, 0, 72, 32, 80, null);
-            g.drawImage(bim, 64, 24, 96, 32, 32, 72, 64, 80, null);
-            g.drawImage(bim, 64, 32, 96, 40, 0, 80, 32, 88, null);
-            g.drawImage(bim, 64, 40, 96, 48, 32, 80, 64, 88, null);
-            g.drawImage(bim, 64, 48, 96, 56, 0, 88, 32, 96, null);
-            g.drawImage(bim, 64, 56, 96, 64, 32, 88, 64, 96, null);
-            g.drawImage(bim, 0, 64, 64, 96, 0, 96, 64, 128, null);
-            g.drawImage(bim, 64, 64, 96, 72, 0, 128, 32, 136, null);
-            g.drawImage(bim, 64, 72, 96, 80, 32, 128, 64, 136, null);
-            g.drawImage(bim, 64, 80, 96, 88, 0, 136, 32, 144, null);
-            g.drawImage(bim, 64, 88, 96, 96, 32, 136, 64, 144, null);
+            PixelImage finalImage = new PixelImage(40, 30);
+            finalImage.drawImage(bim, 0, 0, 64, 64, 0, 0, 64, 64);
+            finalImage.drawImage(bim, 64, 0, 96, 8, 0, 64, 32, 72);
+            finalImage.drawImage(bim, 64, 8, 96, 16, 32, 64, 64, 72);
+            finalImage.drawImage(bim, 64, 16, 96, 24, 0, 72, 32, 80);
+            finalImage.drawImage(bim, 64, 24, 96, 32, 32, 72, 64, 80);
+            finalImage.drawImage(bim, 64, 32, 96, 40, 0, 80, 32, 88);
+            finalImage.drawImage(bim, 64, 40, 96, 48, 32, 80, 64, 88);
+            finalImage.drawImage(bim, 64, 48, 96, 56, 0, 88, 32, 96);
+            finalImage.drawImage(bim, 64, 56, 96, 64, 32, 88, 64, 96);
+            finalImage.drawImage(bim, 0, 64, 64, 96, 0, 96, 64, 128);
+            finalImage.drawImage(bim, 64, 64, 96, 72, 0, 128, 32, 136);
+            finalImage.drawImage(bim, 64, 72, 96, 80, 32, 128, 64, 136);
+            finalImage.drawImage(bim, 64, 80, 96, 88, 0, 136, 32, 144);
+            finalImage.drawImage(bim, 64, 88, 96, 96, 32, 136, 64, 144);
 
             // Phew, all done.
             return finalImage;

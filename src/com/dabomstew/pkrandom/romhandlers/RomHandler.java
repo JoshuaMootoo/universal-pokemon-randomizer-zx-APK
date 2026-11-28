@@ -24,8 +24,9 @@ package com.dabomstew.pkrandom.romhandlers;
 /*--  You should have received a copy of the GNU General Public License     --*/
 /*--  along with this program. If not, see <http://www.gnu.org/licenses/>.  --*/
 /*----------------------------------------------------------------------------*/
+/*  Modified 2026-11-28 for "UPR ZX for Android (unofficial)": java.awt BufferedImage/Graphics replaced by PixelImage (BUILD_SPEC 4.3).  */
 
-import java.awt.image.BufferedImage;
+import com.dabomstew.pkrandom.PixelImage;
 import java.io.PrintStream;
 import java.util.List;
 import java.util.Map;
@@ -627,7 +628,7 @@ public interface RomHandler {
 
     void randomizeIntroPokemon();
 
-    BufferedImage getMascotImage();
+    PixelImage getMascotImage();
 
     int generationOfPokemon();
 

@@ -26,22 +26,22 @@ package com.dabomstew.pkrandom;
 /*--  You should have received a copy of the GNU General Public License     --*/
 /*--  along with this program. If not, see <http://www.gnu.org/licenses/>.  --*/
 /*----------------------------------------------------------------------------*/
+/*  Modified 2026-11-28 for "UPR ZX for Android (unofficial)": java.awt BufferedImage/Graphics replaced by PixelImage (BUILD_SPEC 4.3).  */
 
-import java.awt.image.BufferedImage;
 import java.util.LinkedList;
 import java.util.Queue;
 
 public class GFXFunctions {
 
-    public static BufferedImage drawTiledImage(byte[] data, int[] palette, int width, int height, int bpp) {
+    public static PixelImage drawTiledImage(byte[] data, int[] palette, int width, int height, int bpp) {
         return drawTiledImage(data, palette, 0, width, height, 8, 8, bpp);
     }
 
-    public static BufferedImage drawTiledImage(byte[] data, int[] palette, int offset, int width, int height, int bpp) {
+    public static PixelImage drawTiledImage(byte[] data, int[] palette, int offset, int width, int height, int bpp) {
         return drawTiledImage(data, palette, offset, width, height, 8, 8, bpp);
     }
 
-    private static BufferedImage drawTiledImage(byte[] data, int[] palette, int offset, int width, int height,
+    private static PixelImage drawTiledImage(byte[] data, int[] palette, int offset, int width, int height,
                                                 int tileWidth, int tileHeight, int bpp) {
         if (bpp != 1 && bpp != 2 && bpp != 4 && bpp != 8) {
             throw new IllegalArgumentException("Bits per pixel must be a multiple of 2.");
@@ -55,7 +55,7 @@ public class GFXFunctions {
         int numTiles = width * height / (tileWidth * tileHeight);
         int widthInTiles = width / tileWidth;
 
-        BufferedImage bim = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+        PixelImage bim = new PixelImage(width, height);
 
         for (int tile = 0; tile < numTiles; tile++) {
             int tileX = tile % widthInTiles;
@@ -74,11 +74,11 @@ public class GFXFunctions {
         return bim;
     }
 
-    public static BufferedImage drawTiledZOrderImage(byte[] data, int[] palette, int offset, int width, int height, int bpp) {
+    public static PixelImage drawTiledZOrderImage(byte[] data, int[] palette, int offset, int width, int height, int bpp) {
         return drawTiledZOrderImage(data, palette, offset, width, height, 8, 8, bpp);
     }
 
-    private static BufferedImage drawTiledZOrderImage(byte[] data, int[] palette, int offset, int width, int height,
+    private static PixelImage drawTiledZOrderImage(byte[] data, int[] palette, int offset, int width, int height,
                                                 int tileWidth, int tileHeight, int bpp) {
         if (bpp != 1 && bpp != 2 && bpp != 4 && bpp != 8) {
             throw new IllegalArgumentException("Bits per pixel must be a multiple of 2.");
@@ -92,7 +92,7 @@ public class GFXFunctions {
         int numTiles = width * height / (tileWidth * tileHeight);
         int widthInTiles = width / tileWidth;
 
-        BufferedImage bim = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+        PixelImage bim = new PixelImage(width, height);
 
         for (int tile = 0; tile < numTiles; tile++) {
             int tileX = tile % widthInTiles;
@@ -134,7 +134,7 @@ public class GFXFunctions {
         return (alpha << 24) | (red << 16) | (green << 8) | blue;
     }
 
-    public static void pseudoTransparency(BufferedImage img, int transColor) {
+    public static void pseudoTransparency(PixelImage img, int transColor) {
         int width = img.getWidth();
         int height = img.getHeight();
         Queue<Integer> visitPixels = new LinkedList<>();

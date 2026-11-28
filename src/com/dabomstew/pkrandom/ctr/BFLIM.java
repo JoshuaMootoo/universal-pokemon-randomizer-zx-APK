@@ -22,10 +22,11 @@ package com.dabomstew.pkrandom.ctr;
 /*--  You should have received a copy of the GNU General Public License     --*/
 /*--  along with this program. If not, see <http://www.gnu.org/licenses/>.  --*/
 /*----------------------------------------------------------------------------*/
+/*  Modified 2026-11-28 for "UPR ZX for Android (unofficial)": java.awt BufferedImage/Graphics replaced by PixelImage (BUILD_SPEC 4.3).  */
 
+import com.dabomstew.pkrandom.PixelImage;
 import com.dabomstew.pkrandom.FileFunctions;
 
-import java.awt.image.BufferedImage;
 
 public class BFLIM {
 
@@ -48,14 +49,14 @@ public class BFLIM {
     }
 
     @SuppressWarnings("SuspiciousNameCombination")
-    public BufferedImage getImage() {
+    public PixelImage getImage() {
         // Swap width and height, because the image is rendered on its side
         int swappedWidth = height;
         int swappedHeight = width;
         int[] decodedImageData = decodeBlock(imageData, swappedWidth, swappedHeight);
         int[] colorData = convertToColorData(decodedImageData);
         int[] correctedColorData = rearrangeImage(colorData, width, height);
-        BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+        PixelImage image = new PixelImage(width, height);
         for (int y = 0; y < height; y++) {
             for (int x = 0; x < width; x++) {
                 int color = correctedColorData[x + (y * this.width)];
